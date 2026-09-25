@@ -1,0 +1,50 @@
+================================================================================
+          HƯỚNG DẪN XEM PHIM NGẮN TỰ ĐỘNG CHUYỂN TẬP TRÊN ANDROID (DRAMAPLAY)
+================================================================================
+
+I. TÍNH NĂNG CỦA APP XEM PHIM:
+1. Tự động chuyển tập: Khi xem hết tập 1, app sẽ đếm ngược 2 giây và tự động phát tập 2.
+2. Vuốt màn hình (TikTok / ReelShort style):
+   - Vuốt lên: Qua tập tiếp theo.
+   - Vuốt xuống: Lùi về tập trước.
+3. Chạm 2 lần (Double-tap) để tua: Chạm bên phải tua tới 10s, chạm bên trái lùi lại 10s.
+4. Chỉnh tốc độ xem: 1.0x, 1.25x, 1.5x, 2.0x.
+5. Danh sách tập: Bấm "📑 Danh Sách Tập" để mở bảng chọn nhanh mọi tập trong phim.
+6. Tự động lưu tiến độ: Nhớ chính xác bạn đang xem dở đến tập mấy, phút thứ mấy.
+
+--------------------------------------------------------------------------------
+II. CÁCH XEM TRÊN ĐIỆN THOẠI ANDROID (2 CÁCH):
+
+CÁCH 1: XEM NGAY QUA MẠNG WI-FI NỘI BỘ (Chạy thử ngay bây giờ):
+1. Trên máy tính, bấm đúp vào file [Chay_App_Xem_Phim.bat] trong thư mục này.
+2. Cửa sổ sẽ hiện lên địa chỉ IP, ví dụ: http://192.168.1.15:8080
+3. Trên điện thoại Android (kết nối cùng Wi-Fi):
+   - Mở Chrome, gõ địa chỉ: http://192.168.1.15:8080
+   - Bấm vào dấu 3 chấm góc phải trình duyệt Chrome -> Chọn "Thêm vào Màn hình chính" 
+     (Add to Home screen).
+   - Ngay lập tức nó sẽ xuất hiện dưới dạng một App độc lập có icon DramaPlay trên điện thoại!
+
+CÁCH 2: ĐƯA LÊN MẠNG (ĐỂ ĐI ĐÂU DÙNG 4G/5G CŨNG XEM ĐƯỢC - MIỄN PHÍ 100%):
+- Bạn có thể kéo thả toàn bộ thư mục [drama_player_app] này lên Netlify Drop (drop.netlify.com) 
+  hoặc Vercel hoặc GitHub Pages.
+- Bạn sẽ có 1 đường link online vĩnh viễn (ví dụ: https://dramaplay-cua-ban.netlify.app), 
+  không cần bật máy tính vẫn mở trên điện thoại xem bình thường!
+
+--------------------------------------------------------------------------------
+III. HƯỚNG DẪN KẾT NỐI GOOGLE DRIVE ĐỂ LẤY PHIM:
+1. Trên Google Drive của bạn, tạo 1 thư mục mẹ (ví dụ: "Kho Phim").
+2. Bên trong "Kho Phim", tạo từng thư mục con theo tên phim:
+   Kho Phim/
+     ├── Tuột Mất Luna/
+     │     ├── Tuot Mat Luna - Tap 01.mp4
+     │     ├── Tuot Mat Luna - Tap 02.mp4
+     │     └── ...
+     └── Buried Sacrifice/
+           ├── Buried Sacrifice - Tap 01.mp4
+           └── ...
+3. Mở file [GoogleAppsScript_Code.gs], copy toàn bộ code.
+4. Truy cập https://script.google.com -> Tạo "Dự án mới" -> Dán code -> Bấm Triển khai (Deploy)
+   dưới dạng Web App (Quyền truy cập: Bất kỳ ai).
+5. Copy đường link Web App và ID thư mục Google Drive của bạn, dán vào mục ⚙️ Cài đặt trên App
+   là phim tự động hiện ra đầy đủ!
+================================================================================
