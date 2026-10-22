@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trumdrama-v20261022-v1';
+const CACHE_NAME = 'trumdrama-v20261022-v2';
 const ASSETS = [
   './',
   './index.html',

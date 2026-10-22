@@ -156,25 +156,35 @@ def fetch_drive_folder_entries(folder_id, retries=3):
     return []
 
 
+def find_catalog_entry(raw_title, catalog):
+    if not catalog or not raw_title:
+        return None
+    norm_k = normalize_key(raw_title)
+    slug_k = make_slug(raw_title)
+    raw_slug = re.sub(r'[^a-z0-9]+', '-', remove_accents(raw_title).lower()).strip('-')
+    for k in (slug_k, raw_slug, norm_k, f"long-tieng-{slug_k}", f"{slug_k}-long-tieng"):
+        if k and k in catalog and catalog[k].get('id'):
+            return catalog[k]
+    return None
+
+
 def resolve_initial_poster(movie, catalog):
     mid = movie['id']
     raw_title = movie['title']
     cover_filename = f"{mid}.jpg"
     local_path = os.path.join(COVERS_DIR, cover_filename)
 
+    entry = find_catalog_entry(raw_title, catalog)
+    if entry and entry.get('id'):
+        if is_file_valid_image(local_path):
+            return f"./covers/{cover_filename}"
+        return f"https://trumdrama.com/_next/image?url=%2Fapi%2Fv1%2Fimage%2F{entry['id']}&w=384&q=75"
+
     if is_file_valid_image(local_path):
         return f"./covers/{cover_filename}"
 
-    norm_k = normalize_key(raw_title)
-    slug_k = make_slug(raw_title)
-
-    for k in (norm_k, slug_k):
-        if k in catalog:
-            entry = catalog[k]
-            if entry.get('cover'):
-                return entry['cover']
-            if entry.get('id'):
-                return f"https://trumdrama.com/_next/image?url=%2Fapi%2Fv1%2Fimage%2F{entry['id']}&w=384&q=75"
+    if movie.get('cover_file_id'):
+        return f"https://drive.google.com/thumbnail?id={movie['cover_file_id']}&sz=w500"
 
     if movie.get('episodes') and len(movie['episodes']) > 0:
         first_fid = movie['episodes'][0]['id']
@@ -268,8 +278,11 @@ def sync():
                 return None
 
             video_entries = []
+            cover_file_id = None
             for eid, ename in entries:
-                if VIDEO_EXT_REGEX.search(ename) or not NON_VIDEO_EXT_REGEX.search(ename):
+                if re.search(r'\.(jpg|jpeg|png|webp)$', ename, re.IGNORECASE):
+                    cover_file_id = eid
+                elif VIDEO_EXT_REGEX.search(ename) or not NON_VIDEO_EXT_REGEX.search(ename):
                     video_entries.append((eid, ename))
 
             if not video_entries:
@@ -290,6 +303,8 @@ def sync():
                 "total_episodes": len(episodes),
                 "episodes": episodes
             }
+            if cover_file_id:
+                movie_obj["cover_file_id"] = cover_file_id
             movie_obj["poster_url"] = resolve_initial_poster(movie_obj, catalog)
             return movie_obj
 
@@ -318,7 +333,8 @@ def sync():
     print(f"\n[THÀNH CÔNG BƯỚC 1] Đã cập nhật {len(final_movies)} bộ phim vào movies.json ({size_mb:.2f} MB)!")
     print(" -> Ngay bây giờ bạn đã có thể mở web và xem toàn bộ phim!")
 
-    # Bước 3: Tải ảnh bìa về thư mục ./covers/ để tăng tốc độ tải ảnh lâu dài
+    # Bước 3: Tải ảnh bìa chuẩn của Trùm Drama về thư mục ./covers/
+    refresh_covers = ('--refresh-covers' in sys.argv)
     download_tasks = []
     for m in final_movies:
         mid = m['id']
@@ -326,22 +342,19 @@ def sync():
         cover_filename = f"{mid}.jpg"
         target_path = os.path.join(COVERS_DIR, cover_filename)
 
-        if is_file_valid_image(target_path):
+        entry = find_catalog_entry(raw_title, catalog)
+
+        # Nếu chưa có ảnh hợp lệ, hoặc nếu bật --refresh-covers để thay ảnh chụp tập 1 bằng poster chuẩn Trùm Drama
+        if is_file_valid_image(target_path) and not refresh_covers:
             m['poster_url'] = f"./covers/{cover_filename}"
             continue
 
         candidates = []
-        norm_k = normalize_key(raw_title)
-        slug_k = make_slug(raw_title)
-
-        for k in (norm_k, slug_k):
-            if k in catalog:
-                entry = catalog[k]
-                if entry.get('cover'):
-                    candidates.append(entry['cover'])
-                if entry.get('id'):
-                    candidates.append(f"https://trumdrama.com/_next/image?url=%2Fapi%2Fv1%2Fimage%2F{entry['id']}&w=384&q=75")
-                    candidates.append(f"https://trumdrama.com/api/v1/image/{entry['id']}")
+        if entry and entry.get('id'):
+            candidates.append(f"https://trumdrama.com/_next/image?url=%2Fapi%2Fv1%2Fimage%2F{entry['id']}&w=384&q=75")
+            candidates.append(f"https://trumdrama.com/api/v1/image/{entry['id']}")
+        if m.get('cover_file_id'):
+            candidates.append(f"https://drive.google.com/thumbnail?id={m['cover_file_id']}&sz=w500")
         if m.get('episodes') and len(m['episodes']) > 0:
             first_fid = m['episodes'][0]['id']
             candidates.append(f"https://drive.google.com/thumbnail?id={first_fid}&sz=w400")

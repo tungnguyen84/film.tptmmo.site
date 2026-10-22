@@ -217,12 +217,33 @@ class TrumDramaApp {
     return `${displayTitle} là bộ phim ngắn đặc sắc thuộc thể loại ${gNames || 'Ngôn tình, Kịch tính'}. Trọn bộ ${totalEps} tập với cốt truyện gay cấn, nhịp phim nhanh, những cú xoay chuyển bất ngờ và cảm xúc sâu sắc.`;
   }
 
+  findCatalogEntry(rawTitle, displayTitle, slug, normTitle) {
+    if (!this.catalogMap) return null;
+    const rawSlug = this.makeSlug(rawTitle);
+    const accentedKey = String(displayTitle || '').toLowerCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+    const candidates = [
+      slug,
+      rawSlug,
+      accentedKey,
+      normTitle,
+      `long-tieng-${slug}`,
+      `${slug}-long-tieng`
+    ];
+    for (const c of candidates) {
+      if (c && this.catalogMap[c] && this.catalogMap[c].id) {
+        return this.catalogMap[c];
+      }
+    }
+    return null;
+  }
+
   enrichMovie(m, idx = 0) {
-    const displayTitle = this.cleanMovieTitle(m.title);
+    const rawTitle = m.rawTitle || m.title || '';
+    const displayTitle = this.cleanMovieTitle(rawTitle);
     const slug = m.slug || this.makeSlug(displayTitle);
     const normTitle = this.removeAccents(displayTitle).replace(/[^a-z0-9]+/g, ' ').trim();
-    const searchKey = `${String(m.title || '').toLowerCase()} ${displayTitle.toLowerCase()} ${normTitle} ${slug}`;
-    const { genreSlugs, genreObjects, isDubbed } = this.classifyMovie(m.title);
+    const searchKey = `${String(rawTitle).toLowerCase()} ${displayTitle.toLowerCase()} ${normTitle} ${slug}`;
+    const { genreSlugs, genreObjects, isDubbed } = this.classifyMovie(rawTitle);
     const totalEps = (m.episodes && m.episodes.length) || m.total_episodes || 0;
 
     const h = this.hashCode(m.id || displayTitle);
@@ -236,17 +257,21 @@ class TrumDramaApp {
       ? `https://drive.google.com/thumbnail?id=${firstEpId}&sz=w400`
       : '';
 
-    const catEntry = this.catalogMap[normTitle] || this.catalogMap[slug];
+    const localCover = m.localCover || m.poster_url || `./covers/${m.id}.jpg`;
+    const catEntry = this.findCatalogEntry(rawTitle, displayTitle, slug, normTitle);
     const tdPoster = (catEntry && catEntry.id)
       ? `https://trumdrama.com/_next/image?url=%2Fapi%2Fv1%2Fimage%2F${catEntry.id}&w=384&q=75`
       : '';
 
-    const posterUrl = m.poster_url || tdPoster || driveThumb || `./covers/${m.id}.jpg`;
-    const fallbackPoster = tdPoster || driveThumb || '';
+    // Ưu tiên số 1: Ảnh bìa poster chuẩn từ Trùm Drama (tránh ảnh chụp khung hình tập 1 từ Google Drive)
+    const posterUrl = tdPoster || localCover || driveThumb;
+    const fallbackPoster = (posterUrl === tdPoster) ? (localCover || driveThumb) : (driveThumb || '');
     const description = m.description || this.buildDefaultDescription(displayTitle, genreObjects, totalEps);
 
     return {
       ...m,
+      rawTitle,
+      localCover,
       indexOrder: idx,
       displayTitle,
       slug,
@@ -788,13 +813,31 @@ class TrumDramaApp {
   /* ==================== DATA FETCHING & CATALOG ENRICHMENT ==================== */
 
   async fetchData(force = false) {
+    // Tải song song cả trumdrama_catalog.json và movies.json để có ngay ảnh poster chuẩn của Trùm Drama
     try {
-      const res = await fetch(`./movies.json?t=${force ? Date.now() : 'td1'}`);
-      if (res.ok) {
-        const rawList = await res.json();
+      const [moviesRes, catRes] = await Promise.all([
+        fetch(`./movies.json?t=${force ? Date.now() : 'td2'}`),
+        this.catalogMap && Object.keys(this.catalogMap).length > 0
+          ? Promise.resolve(null)
+          : fetch('./trumdrama_catalog.json').catch(() => null)
+      ]);
+
+      if (catRes && catRes.ok) {
+        try {
+          const catData = await catRes.json();
+          if (catData && typeof catData === 'object') {
+            this.catalogMap = catData;
+          }
+        } catch (e) {}
+      }
+
+      if (moviesRes && moviesRes.ok) {
+        const rawList = await moviesRes.json();
         if (Array.isArray(rawList) && rawList.length > 0) {
           this.setMoviesData(rawList);
-          this.loadCatalogInBackground();
+          if (!this.catalogMap || Object.keys(this.catalogMap).length === 0) {
+            this.loadCatalogInBackground();
+          }
           return;
         }
       }
@@ -822,21 +865,17 @@ class TrumDramaApp {
       const cat = await res.json();
       if (cat && typeof cat === 'object') {
         this.catalogMap = cat;
-        // Re-enrich movies with official TrumDrama poster fallbacks
-        this.movies = this.movies.map((m, idx) => {
-          const entry = this.catalogMap[m.normTitle] || this.catalogMap[m.slug];
-          if (entry && entry.id) {
-            const tdUrl = `https://trumdrama.com/_next/image?url=%2Fapi%2Fv1%2Fimage%2F${entry.id}&w=384&q=75`;
-            return {
-              ...m,
-              fallbackPoster: tdUrl
-            };
-          }
-          return m;
-        });
-        // Update visible images' fallback attribute if needed
-        if (this.currentView === 'home') {
-          this.renderHomeSections();
+        // Re-enrich movies so tdPoster becomes the primary poster_url
+        this.movies = this.movies.map((m, idx) => this.enrichMovie(m, idx));
+        this.initHeroBanner();
+        this.renderHomeSections();
+        if (this.currentView === 'explore') {
+          this.applyExploreFilters(this.explorePage);
+        } else if (this.currentView === 'detail' && this.currentMovie) {
+          const updated = this.movies.find(mv => mv.id === this.currentMovie.id) || this.currentMovie;
+          this.renderMovieDetailPage(updated);
+        } else if (this.currentView === 'favorites' || this.currentView === 'history') {
+          this.renderUserListPage(this.currentView);
         }
       }
     } catch (e) {}
