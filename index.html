@@ -420,6 +420,11 @@
             </div>
           </div>
 
+          <!-- Soft Subtitle Overlay (Tự động hiển thị phụ đề .SRT/.VTT rời) -->
+          <div class="vp-subtitle-box" id="vpSubtitleBox" style="display:none">
+            <span class="vp-subtitle-text" id="vpSubtitleText"></span>
+          </div>
+
           <!-- Auto-Next Episode Countdown -->
           <div class="vp-autonext-box" id="autoNextOverlay">
             <div style="font-size:13px; color:#fff;">
@@ -481,6 +486,7 @@
               </div>
 
               <div class="vp-controls-right">
+                <button class="vp-btn vp-speed-btn vp-btn-active" id="btnSubToggle" title="Bật / Tắt phụ đề rời (Phím C)" onclick="appInstance.toggleSubtitles()">CC: Bật</button>
                 <button class="vp-btn vp-speed-btn" id="btnAutoNextToggle" title="Tự động chuyển tập" onclick="appInstance.toggleAutoNextSetting()">Auto: Bật</button>
                 <div class="vp-speed-wrap">
                   <button class="vp-btn vp-speed-btn" id="btnSpeed" title="Tốc độ phát" onclick="appInstance.toggleSpeedMenu(event)">1x</button>

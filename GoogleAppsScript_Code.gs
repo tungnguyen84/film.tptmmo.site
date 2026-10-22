@@ -35,13 +35,23 @@ function doGet(e) {
       var movieTitle = folder.getName();
       var files = folder.getFiles();
       var episodes = [];
+      var subMapByStem = {};
+      var subMapByEp = {};
       
       while (files.hasNext()) {
         var file = files.next();
         var mime = file.getMimeType();
         var name = file.getName();
         
-        if (mime.indexOf("video") !== -1 || name.match(/\.(mp4|mkv|mov|webm|avi)$/i)) {
+        if (name.match(/\.(srt|vtt)$/i)) {
+          var subId = file.getId();
+          var stem = name.replace(/\.(srt|vtt)$/i, "").trim().toLowerCase();
+          subMapByStem[stem] = subId;
+          var epMatch = name.match(/(?:tap|tập|ep|episode)[\s_\-\.]*(\d+)/i) || name.match(/(\d+)(?=\.(srt|vtt)$)/i);
+          if (epMatch && epMatch[1]) {
+            subMapByEp[parseInt(epMatch[1], 10)] = subId;
+          }
+        } else if (mime.indexOf("video") !== -1 || name.match(/\.(mp4|mkv|mov|webm|avi)$/i)) {
           var fileId = file.getId();
           episodes.push({
             id: fileId,
@@ -57,6 +67,17 @@ function doGet(e) {
       episodes.sort(function(a, b) {
         return a.name.localeCompare(b.name, undefined, {numeric: true, sensitivity: 'base'});
       });
+
+      for (var ei = 0; ei < episodes.length; ei++) {
+        var vName = episodes[ei].name || "";
+        var vStem = vName.replace(/\.[^/.]+$/, "").trim().toLowerCase();
+        var vEpM = vName.match(/(?:tap|tập|ep|episode)[\s_\-\.]*(\d+)/i);
+        var vEpNum = vEpM && vEpM[1] ? parseInt(vEpM[1], 10) : (ei + 1);
+        var matchedSub = subMapByStem[vStem] || subMapByEp[vEpNum] || subMapByEp[ei + 1];
+        if (matchedSub) {
+          episodes[ei].sub = matchedSub;
+        }
+      }
       
       if (episodes.length > 0) {
         movies.push({

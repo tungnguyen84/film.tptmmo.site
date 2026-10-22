@@ -60,6 +60,9 @@ class TrumDramaApp {
     this.streamProxyAvailable = true;
     this.isDriveMode = false;
     this.autoNextEnabled = localStorage.getItem('dramaplay_autonext') !== 'false';
+    this.subEnabled = localStorage.getItem('dramaplay_sub_enabled') !== 'false';
+    this.currentSubCues = [];
+    this.subFetchSeq = 0;
     this.autoNextTimer = null;
     this.currentSpeed = 1.0;
     this.wakeLock = null;
@@ -88,6 +91,7 @@ class TrumDramaApp {
     this.initEvents();
     this.updateNavBadges();
     this.updateAutoNextUI();
+    this.updateSubToggleUI();
     this.fetchData();
   }
 
@@ -462,6 +466,9 @@ class TrumDramaApp {
     this.vpLoading = document.getElementById('vpLoading');
     this.vpBigPlay = document.getElementById('vpBigPlay');
     this.vpTitleText = document.getElementById('vpTitleText');
+    this.vpSubtitleBox = document.getElementById('vpSubtitleBox');
+    this.vpSubtitleText = document.getElementById('vpSubtitleText');
+    this.btnSubToggle = document.getElementById('btnSubToggle');
     this.autoNextOverlay = document.getElementById('autoNextOverlay');
     this.autoNextEpTitle = document.getElementById('autoNextEpTitle');
     this.autoNextCountdown = document.getElementById('autoNextCountdown');
@@ -656,6 +663,11 @@ class TrumDramaApp {
           e.preventDefault();
           this.toggleMute();
           break;
+        case 'c':
+        case 'C':
+          e.preventDefault();
+          this.toggleSubtitles();
+          break;
         case 'Escape':
           if (this.mobileEpSheetBackdrop && this.mobileEpSheetBackdrop.style.display !== 'none') {
             this.closeMobileEpSheet();
@@ -695,6 +707,7 @@ class TrumDramaApp {
     });
     this.videoEl.addEventListener('timeupdate', () => {
       this.updateTimelineUI();
+      this.updateSubtitleOverlay();
       this.saveCurrentProgress();
     });
     this.videoEl.addEventListener('loadedmetadata', () => this.updateTimelineUI());
@@ -1829,6 +1842,7 @@ class TrumDramaApp {
 
     this.triedDirectFallback = (activeSrv === 'direct');
     this.pendingStartTime = startTime;
+    this.loadEpisodeSubtitles(m, ep, epNum);
 
     this.showLoader();
     this.videoEl.src = srcUrl;
@@ -1906,6 +1920,8 @@ class TrumDramaApp {
     if (this.controlsTimeout) clearTimeout(this.controlsTimeout);
     this.hideLoader();
     this.isDriveMode = false;
+    this.currentSubCues = [];
+    if (this.vpSubtitleBox) this.vpSubtitleBox.style.display = 'none';
     if (this.videoEl) {
       this.videoEl.pause();
       this.videoEl.removeAttribute('src');
@@ -2093,6 +2109,129 @@ class TrumDramaApp {
     if (!this.btnAutoNextToggle) return;
     this.btnAutoNextToggle.classList.toggle('vp-btn-active', this.autoNextEnabled);
     this.btnAutoNextToggle.textContent = this.autoNextEnabled ? 'Auto: Bật' : 'Auto: Tắt';
+  }
+
+  /* ==================== SOFT SUBTITLE (.SRT / .VTT) ENGINE ==================== */
+
+  toggleSubtitles() {
+    this.subEnabled = !this.subEnabled;
+    localStorage.setItem('dramaplay_sub_enabled', String(this.subEnabled));
+    this.updateSubToggleUI();
+    this.updateSubtitleOverlay();
+    this.showToast(this.subEnabled ? '💬 Phụ đề rời (.SRT): BẬT' : '🚫 Phụ đề rời (.SRT): TẮT');
+  }
+
+  updateSubToggleUI() {
+    if (!this.btnSubToggle) return;
+    this.btnSubToggle.classList.toggle('vp-btn-active', this.subEnabled);
+    const hasSub = this.currentSubCues && this.currentSubCues.length > 0;
+    this.btnSubToggle.textContent = this.subEnabled ? (hasSub ? 'CC: Bật ✓' : 'CC: Bật') : 'CC: Tắt';
+  }
+
+  parseSubTimestamp(ts) {
+    const clean = String(ts || '').trim().replace(',', '.');
+    const parts = clean.split(':');
+    if (parts.length === 3) {
+      return (parseInt(parts[0], 10) * 3600) + (parseInt(parts[1], 10) * 60) + parseFloat(parts[2]);
+    }
+    if (parts.length === 2) {
+      return (parseInt(parts[0], 10) * 60) + parseFloat(parts[1]);
+    }
+    return 0;
+  }
+
+  parseSubCues(rawText) {
+    if (!rawText) return [];
+    const lines = String(rawText).replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+    const cues = [];
+    const tsRegex = /(\d{1,2}:\d{2}:\d{2}[.,]\d{1,3}|\d{2}:\d{2}[.,]\d{1,3})\s*-->\s*(\d{1,2}:\d{2}:\d{2}[.,]\d{1,3}|\d{2}:\d{2}[.,]\d{1,3})/;
+    let i = 0;
+    while (i < lines.length) {
+      const m = lines[i].match(tsRegex);
+      if (m) {
+        const start = this.parseSubTimestamp(m[1]);
+        const end = this.parseSubTimestamp(m[2]);
+        i++;
+        const textLines = [];
+        while (i < lines.length && lines[i].trim() !== '' && !tsRegex.test(lines[i])) {
+          const cleaned = lines[i].replace(/<[^>]+>/g, '').replace(/\{[^}]+\}/g, '').trim();
+          if (cleaned) textLines.push(cleaned);
+          i++;
+        }
+        if (textLines.length > 0 && end > start) {
+          cues.push({ start, end, text: textLines.join('\n') });
+        }
+      } else {
+        i++;
+      }
+    }
+    return cues;
+  }
+
+  async loadEpisodeSubtitles(movie, ep, epNum) {
+    this.subFetchSeq = (this.subFetchSeq || 0) + 1;
+    const seq = this.subFetchSeq;
+    this.currentSubCues = [];
+    if (this.vpSubtitleBox) this.vpSubtitleBox.style.display = 'none';
+    if (this.vpSubtitleText) this.vpSubtitleText.textContent = '';
+    this.updateSubToggleUI();
+
+    if (!movie || !ep) return;
+
+    const candidates = [];
+    if (ep.sub) {
+      candidates.push(`/stream/?id=${encodeURIComponent(ep.sub)}`);
+    }
+    if (ep.sub_url) {
+      candidates.push(ep.sub_url);
+    }
+    if (movie.slug) {
+      candidates.push(`./subs/${movie.slug}/tap-${epNum}.srt`);
+      candidates.push(`./subs/${movie.slug}/tap-${epNum}.vtt`);
+    }
+    if (movie.id) {
+      candidates.push(`./subs/${movie.id}/tap-${epNum}.srt`);
+    }
+
+    for (const url of candidates) {
+      if (seq !== this.subFetchSeq) return;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const txt = await res.text();
+        if (seq !== this.subFetchSeq) return;
+        const parsed = this.parseSubCues(txt);
+        if (parsed.length > 0) {
+          this.currentSubCues = parsed;
+          this.updateSubToggleUI();
+          this.updateSubtitleOverlay();
+          return;
+        }
+      } catch (e) {}
+    }
+  }
+
+  updateSubtitleOverlay() {
+    if (!this.vpSubtitleBox || !this.vpSubtitleText) return;
+    if (!this.subEnabled || this.isDriveMode || !this.videoEl || !this.currentSubCues || this.currentSubCues.length === 0) {
+      this.vpSubtitleBox.style.display = 'none';
+      return;
+    }
+    const t = this.videoEl.currentTime || 0;
+    let activeCue = null;
+    for (let i = 0; i < this.currentSubCues.length; i++) {
+      const c = this.currentSubCues[i];
+      if (t >= c.start && t <= c.end) {
+        activeCue = c;
+        break;
+      }
+    }
+    if (activeCue && activeCue.text) {
+      this.vpSubtitleText.textContent = activeCue.text;
+      this.vpSubtitleBox.style.display = 'block';
+    } else {
+      this.vpSubtitleBox.style.display = 'none';
+    }
   }
 
   toggleFullscreen() {

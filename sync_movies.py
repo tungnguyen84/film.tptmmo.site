@@ -123,7 +123,10 @@ def load_existing_movies():
                                 eid = ep.get('id') if isinstance(ep, dict) else str(ep)
                                 ename = ep.get('name') if isinstance(ep, dict) else f"Tập {idx + 1:02d}"
                                 if eid:
-                                    compact_eps.append({"id": eid, "name": ename})
+                                    ep_obj = {"id": eid, "name": ename}
+                                    if isinstance(ep, dict) and ep.get('sub'):
+                                        ep_obj["sub"] = ep.get('sub')
+                                    compact_eps.append(ep_obj)
                             if compact_eps:
                                 m['episodes'] = compact_eps
                                 m['total_episodes'] = len(compact_eps)
@@ -218,8 +221,16 @@ def download_image(url, target_path):
     return False
 
 
+def _extract_ep_number(filename, fallback_idx=1):
+    m = re.search(r'(?:tap|tập|ep|episode)[\s_\-\.]*(\d+)', filename or '', re.IGNORECASE)
+    if m:
+        return int(m.group(1))
+    nums = re.findall(r'(\d+)', os.path.splitext(filename or '')[0])
+    return int(nums[-1]) if nums else fallback_idx
+
+
 def sync():
-    force_rescan = ('--full' in sys.argv)
+    force_rescan = ('--full' in sys.argv or '--subs' in sys.argv)
     t_start = time.time()
 
     print("=" * 65)
@@ -278,10 +289,18 @@ def sync():
                 return None
 
             video_entries = []
+            sub_by_stem = {}
+            sub_by_ep = {}
             cover_file_id = None
             for eid, ename in entries:
                 if re.search(r'\.(jpg|jpeg|png|webp)$', ename, re.IGNORECASE):
                     cover_file_id = eid
+                elif re.search(r'\.(srt|vtt)$', ename, re.IGNORECASE):
+                    stem = os.path.splitext(ename)[0].strip().lower()
+                    sub_by_stem[stem] = eid
+                    ep_n = _extract_ep_number(ename, 0)
+                    if ep_n > 0:
+                        sub_by_ep[ep_n] = eid
                 elif VIDEO_EXT_REGEX.search(ename) or not NON_VIDEO_EXT_REGEX.search(ename):
                     video_entries.append((eid, ename))
 
@@ -292,10 +311,17 @@ def sync():
 
             episodes = []
             for idx, (eid, ename) in enumerate(video_entries):
-                episodes.append({
+                ep_num = idx + 1
+                stem = os.path.splitext(ename)[0].strip().lower()
+                detected_ep_n = _extract_ep_number(ename, ep_num)
+                sub_id = sub_by_stem.get(stem) or sub_by_ep.get(detected_ep_n) or sub_by_ep.get(ep_num)
+                ep_item = {
                     "id": eid,
-                    "name": f"Tập {idx + 1:02d}"
-                })
+                    "name": f"Tập {ep_num:02d}"
+                }
+                if sub_id:
+                    ep_item["sub"] = sub_id
+                episodes.append(ep_item)
 
             movie_obj = {
                 "id": fid,

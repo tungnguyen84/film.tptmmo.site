@@ -21,7 +21,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "Write-Host '==============================================================' -ForegroundColor Cyan; " ^
   "Write-Host 'Dang chay may chu... (Dong cua so nay hoac nhan Ctrl + C de dung)'; " ^
   "Start-Process \"http://localhost:$port\"; " ^
-  "$mimeMap = @{'.html'='text/html; charset=utf-8'; '.css'='text/css; charset=utf-8'; '.js'='application/javascript; charset=utf-8'; '.json'='application/json; charset=utf-8'; '.jpg'='image/jpeg'; '.jpeg'='image/jpeg'; '.png'='image/png'; '.svg'='image/svg+xml'; '.ico'='image/x-icon'}; " ^
+  "$mimeMap = @{'.html'='text/html; charset=utf-8'; '.css'='text/css; charset=utf-8'; '.js'='application/javascript; charset=utf-8'; '.json'='application/json; charset=utf-8'; '.srt'='text/plain; charset=utf-8'; '.vtt'='text/vtt; charset=utf-8'; '.jpg'='image/jpeg'; '.jpeg'='image/jpeg'; '.png'='image/png'; '.svg'='image/svg+xml'; '.ico'='image/x-icon'}; " ^
   "while ($listener.IsListening) { " ^
   "  try { " ^
   "    $ctx = $listener.GetContext(); " ^

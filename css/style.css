@@ -1985,3 +1985,42 @@ body {
     max-width: 45vw;
   }
 }
+
+
+/* Soft Subtitle Overlay (.SRT / .VTT) */
+.vp-subtitle-box {
+  position: absolute;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 540px;
+  text-align: center;
+  z-index: 22;
+  pointer-events: none;
+  transition: bottom 0.25s ease;
+}
+
+.vp-container:not(.vp-show-controls) .vp-subtitle-box {
+  bottom: 34px;
+}
+
+.vp-subtitle-text {
+  display: inline-block;
+  color: #ffffff;
+  font-family: var(--font-montserrat);
+  font-size: clamp(14px, 2.2vw, 18.5px);
+  font-weight: 700;
+  line-height: 1.42;
+  padding: 5px 14px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.62);
+  text-shadow:
+    -1.5px -1.5px 0 #000,
+     1.5px -1.5px 0 #000,
+    -1.5px  1.5px 0 #000,
+     1.5px  1.5px 0 #000,
+     0px    2px   6px rgba(0, 0, 0, 0.95);
+  white-space: pre-line;
+  word-break: break-word;
+}
