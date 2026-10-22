@@ -2500,6 +2500,6 @@ window.addEventListener('DOMContentLoaded', () => {
   appInstance = new TrumDramaApp();
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=20261022_df').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=20261022_sub').catch(() => {});
   }
 });
