@@ -1021,6 +1021,7 @@ class TrumDramaApp {
     }
 
     // Default: Home
+    document.title = 'Drama Film - Nền tảng xem phim ngắn hàng đầu';
     this.showActiveView('home');
     this.renderHomeContinueWatching();
   }
@@ -1649,7 +1650,7 @@ class TrumDramaApp {
 
   renderMovieDetailPage(m) {
     this.detailMovie = m;
-    document.title = `${m.displayTitle} - TrumDrama`;
+    document.title = `${m.displayTitle} - Drama Film`;
 
     if (this.detailBreadcrumbTitle) this.detailBreadcrumbTitle.textContent = m.displayTitle;
     if (this.detailCoverImg) {
@@ -1739,7 +1740,7 @@ class TrumDramaApp {
     this.currentEpIndex = Math.max(0, Math.min(epIndex, movie.episodes.length - 1));
     this.currentEpRangeIndex = Math.floor(this.currentEpIndex / this.epPageSize);
 
-    document.title = `${movie.displayTitle} - Tập ${this.currentEpIndex + 1} | TrumDrama`;
+    document.title = `${movie.displayTitle} - Tập ${this.currentEpIndex + 1} | Drama Film`;
     this.requestWakeLock();
     this.renderWatchSidebarInfo();
     this.playCurrentEpisode(resumeTime);
@@ -1779,7 +1780,7 @@ class TrumDramaApp {
       } catch (e) {}
     }
 
-    document.title = `${m.displayTitle} - Tập ${epNum} | TrumDrama`;
+    document.title = `${m.displayTitle} - Tập ${epNum} | Drama Film`;
 
     // Sync range tab
     this.currentEpRangeIndex = Math.floor(this.currentEpIndex / this.epPageSize);
@@ -2360,6 +2361,6 @@ window.addEventListener('DOMContentLoaded', () => {
   appInstance = new TrumDramaApp();
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=20261022_td').catch(() => {});
+    navigator.serviceWorker.register('./sw.js?v=20261022_df').catch(() => {});
   }
 });

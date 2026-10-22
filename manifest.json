@@ -1,7 +1,7 @@
 {
-  "name": "DramaPlay - Xem Phim Ngắn",
-  "short_name": "DramaPlay",
-  "description": "Ứng dụng xem phim ngắn bộ theo tập từ Google Drive",
+  "name": "Drama Film - Xem Phim Ngắn",
+  "short_name": "Drama Film",
+  "description": "Nền tảng xem phim ngắn hàng đầu",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121212",

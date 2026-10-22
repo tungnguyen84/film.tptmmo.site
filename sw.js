@@ -1,11 +1,10 @@
-const CACHE_NAME = 'trumdrama-v20261022-v2';
+const CACHE_NAME = 'dramafilm-v20261022-v3';
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
   './app.js',
   './js/app.js',
-  './logo.png',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png'
