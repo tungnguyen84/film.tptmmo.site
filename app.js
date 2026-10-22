@@ -2168,6 +2168,38 @@ class TrumDramaApp {
     return cues;
   }
 
+  async fetchLiveFolderSubMap(movie) {
+    if (!movie || !movie.id || movie.isDubbed) return null;
+    if (movie._liveSubMap) return movie._liveSubMap;
+    if (movie._liveSubPromise) return movie._liveSubPromise;
+
+    movie._liveSubPromise = (async () => {
+      const subMap = {};
+      try {
+        const res = await fetch(`/drive-folder/?id=${encodeURIComponent(movie.id)}`);
+        if (res.ok) {
+          const htmlText = await res.text();
+          const regex = /id="entry-([^"]+)"[\s\S]*?<div class="flip-entry-title">([^<]+)<\/div>/g;
+          let m;
+          while ((m = regex.exec(htmlText)) !== null) {
+            const fid = m[1].trim();
+            const fname = m[2].trim();
+            if (/\.(srt|vtt)$/i.test(fname)) {
+              const epM = fname.match(/(?:tap|tập|ep|episode)[\s_\-\.]*(\d+)/i) || fname.match(/(\d+)(?=\.(srt|vtt)$)/i);
+              if (epM && epM[1]) {
+                subMap[parseInt(epM[1], 10)] = fid;
+              }
+            }
+          }
+        }
+      } catch (e) {}
+      movie._liveSubMap = subMap;
+      return subMap;
+    })();
+
+    return movie._liveSubPromise;
+  }
+
   async loadEpisodeSubtitles(movie, ep, epNum) {
     this.subFetchSeq = (this.subFetchSeq || 0) + 1;
     const seq = this.subFetchSeq;
@@ -2181,6 +2213,13 @@ class TrumDramaApp {
     const candidates = [];
     if (ep.sub) {
       candidates.push(`/stream/?id=${encodeURIComponent(ep.sub)}`);
+    } else if (!movie.isDubbed && movie.id && !String(movie.id).startsWith('e')) {
+      const liveMap = await this.fetchLiveFolderSubMap(movie);
+      if (seq !== this.subFetchSeq) return;
+      if (liveMap && liveMap[epNum]) {
+        ep.sub = liveMap[epNum];
+        candidates.push(`/stream/?id=${encodeURIComponent(ep.sub)}`);
+      }
     }
     if (ep.sub_url) {
       candidates.push(ep.sub_url);
@@ -2208,6 +2247,56 @@ class TrumDramaApp {
           return;
         }
       } catch (e) {}
+    }
+
+    // Dự phòng tự động: Nếu thư mục Drive chưa kịp có file .SRT, tự động kéo phụ đề trực tiếp qua /td-page/ & /td-api/
+    if (!movie.isDubbed && seq === this.subFetchSeq) {
+      const liveCues = await this.fetchLiveTrumDramaSub(movie, epNum);
+      if (seq === this.subFetchSeq && liveCues && liveCues.length > 0) {
+        this.currentSubCues = liveCues;
+        this.updateSubToggleUI();
+        this.updateSubtitleOverlay();
+      }
+    }
+  }
+
+  async fetchLiveTrumDramaSub(movie, epNum) {
+    try {
+      if (!movie._tdResolvedSlug) {
+        let slugCand = movie.slug || '';
+        const checkRes = await fetch(`/td-api/movies/${encodeURIComponent(slugCand)}`);
+        if (checkRes.ok) {
+          const checkJson = await checkRes.json();
+          if (checkJson && checkJson.data && checkJson.data.id) {
+            movie._tdResolvedSlug = slugCand;
+          }
+        }
+        if (!movie._tdResolvedSlug && movie.displayTitle) {
+          const sRes = await fetch(`/td-api/movies?page=1&pageSize=6&search=${encodeURIComponent(movie.displayTitle)}`);
+          if (sRes.ok) {
+            const sJson = await sRes.json();
+            const items = (sJson && sJson.data) || [];
+            if (items.length > 0 && items[0].slug) {
+              movie._tdResolvedSlug = items[0].slug;
+            }
+          }
+        }
+      }
+      if (!movie._tdResolvedSlug) return null;
+
+      const pageRes = await fetch(`/td-page/${encodeURIComponent(movie._tdResolvedSlug)}/tap-${epNum}`);
+      if (!pageRes.ok) return null;
+      const pageHtml = await pageRes.text();
+      const subMatch = pageHtml.match(/\/api\/v1\/subtitle\/([a-zA-Z0-9\-]+\?token=[^\s"'\\<>]+)/);
+      if (!subMatch || !subMatch[1]) return null;
+
+      const subQuery = subMatch[1].replace(/&amp;/g, '&');
+      const subRes = await fetch(`/td-api/subtitle/${subQuery}`);
+      if (!subRes.ok) return null;
+      const rawVtt = await subRes.text();
+      return this.parseSubCues(rawVtt);
+    } catch (e) {
+      return null;
     }
   }
 

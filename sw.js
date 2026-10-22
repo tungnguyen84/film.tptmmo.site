@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dramafilm-v20261022-v4';
+const CACHE_NAME = 'dramafilm-v20261022-v5';
 const ASSETS = [
   './',
   './index.html',

@@ -273,6 +273,12 @@ def sync():
             m['title'] = ftitle
             m['poster_url'] = resolve_initial_poster(m, catalog)
             movies_by_id[fid] = m
+            t_low = ftitle.lower()
+            is_dub = ('lồng tiếng' in t_low or 'thuyết minh' in t_low or 'long tieng' in remove_accents(t_low))
+            has_any_sub = any(isinstance(ep, dict) and ep.get('sub') for ep in m.get('episodes', []))
+            # Tự động quét lại những phim chưa có phụ đề .SRT để cập nhật ngay khi có file .srt mới trên Drive
+            if not is_dub and not has_any_sub:
+                to_scan.append((fid, ftitle))
         else:
             to_scan.append((fid, ftitle))
 
