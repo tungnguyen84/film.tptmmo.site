@@ -39,6 +39,8 @@ class DramaPlayApp {
     this.currentEpIndex = 0;
     this.currentEpRangeIndex = 0;
     this.epPageSize = 30;
+    this.gridPageSize = 48;
+    this.renderedCount = 0;
 
     // Player state
     this.serverMode = 'stream'; // 'stream' (/stream/?id=) | 'direct' (lh3) | 'embed' (drive preview)
@@ -146,6 +148,10 @@ class DramaPlayApp {
     const searchKey = `${m.title.toLowerCase()} ${displayTitle.toLowerCase()} ${this.removeAccents(displayTitle)}`;
     const { categories, primaryGenre, isDubbed } = this.classifyMovie(m.title);
     const totalEps = (m.episodes && m.episodes.length) || m.total_episodes || 0;
+    const firstEpId = (m.episodes && m.episodes[0] && (m.episodes[0].id || m.episodes[0])) || '';
+    const fallbackPoster = firstEpId && !String(firstEpId).startsWith('e')
+      ? `https://drive.google.com/thumbnail?id=${firstEpId}&sz=w400`
+      : '';
 
     return {
       ...m,
@@ -154,7 +160,8 @@ class DramaPlayApp {
       categories,
       primaryGenre,
       isDubbed,
-      total_episodes: totalEps
+      total_episodes: totalEps,
+      fallbackPoster
     };
   }
 
@@ -254,6 +261,17 @@ class DramaPlayApp {
     this.sortSelect = document.getElementById('sortSelect');
     this.historyCountBadge = document.getElementById('historyCountBadge');
     this.favCountBadge = document.getElementById('favCountBadge');
+    this.loadMoreContainer = document.getElementById('loadMoreContainer');
+    this.btnLoadMore = document.getElementById('btnLoadMore');
+
+    if (this.loadMoreContainer && 'IntersectionObserver' in window) {
+      const obs = new IntersectionObserver((entries) => {
+        if (entries[0] && entries[0].isIntersecting) {
+          this.renderNextMovieBatch();
+        }
+      }, { rootMargin: '320px' });
+      obs.observe(this.loadMoreContainer);
+    }
 
     // Player Modal Elements
     this.playerModal = document.getElementById('playerModal');
@@ -1006,8 +1024,10 @@ class DramaPlayApp {
 
   renderMovies(list) {
     this.movieListEl.innerHTML = '';
+    this.renderedCount = 0;
 
     if (!list || list.length === 0) {
+      if (this.loadMoreContainer) this.loadMoreContainer.style.display = 'none';
       this.movieListEl.innerHTML = `
         <div style="grid-column: 1/-1; text-align:center; padding: 56px 20px; background: var(--bg-elevated); border-radius: 14px; border: 1px solid var(--border);">
           <div style="font-size: 2.4rem; margin-bottom: 10px;">🎬</div>
@@ -1019,7 +1039,21 @@ class DramaPlayApp {
       return;
     }
 
-    list.forEach(m => {
+    this.renderNextMovieBatch();
+  }
+
+  renderNextMovieBatch() {
+    const list = this.filteredMovies || [];
+    if (this.renderedCount >= list.length) {
+      if (this.loadMoreContainer) this.loadMoreContainer.style.display = 'none';
+      return;
+    }
+
+    const batch = list.slice(this.renderedCount, this.renderedCount + this.gridPageSize);
+    this.renderedCount += batch.length;
+
+    const frag = document.createDocumentFragment();
+    batch.forEach(m => {
       const card = document.createElement('div');
       card.className = 'movie-card';
 
@@ -1029,8 +1063,10 @@ class DramaPlayApp {
         ? Math.min(100, Math.max(6, Math.round(((hist.epIndex + 1) / (m.total_episodes || 1)) * 100)))
         : 0;
 
-      const posterHtml = m.poster_url
-        ? `<img src="${m.poster_url}" class="movie-poster" alt="${m.displayTitle}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      const primarySrc = m.poster_url || m.fallbackPoster || '';
+      const fbSrc = (m.fallbackPoster && m.fallbackPoster !== primarySrc) ? m.fallbackPoster : '';
+      const posterHtml = primarySrc
+        ? `<img src="${primarySrc}" data-fb="${fbSrc}" class="movie-poster" alt="${m.displayTitle}" loading="lazy" onerror="if(this.dataset.fb && this.src!==this.dataset.fb){this.src=this.dataset.fb;}else{this.style.display='none'; this.nextElementSibling.style.display='flex';}">
            <div class="movie-thumb-fallback" style="display:none;">🎬</div>`
         : `<div class="movie-thumb-fallback">🎬</div>`;
 
@@ -1073,8 +1109,21 @@ class DramaPlayApp {
         this.startPlayMovie(m, saved ? saved.epIndex : 0, saved ? saved.time : 0);
       });
 
-      this.movieListEl.appendChild(card);
+      frag.appendChild(card);
     });
+
+    this.movieListEl.appendChild(frag);
+
+    if (this.loadMoreContainer) {
+      if (this.renderedCount < list.length) {
+        this.loadMoreContainer.style.display = 'flex';
+        if (this.btnLoadMore) {
+          this.btnLoadMore.textContent = `⬇ Xem thêm phim (Đang hiện ${this.renderedCount} / ${list.length} bộ)`;
+        }
+      } else {
+        this.loadMoreContainer.style.display = 'none';
+      }
+    }
   }
 
   toggleFavorite(movieId) {
@@ -1241,12 +1290,13 @@ class DramaPlayApp {
     if (!ep) return;
 
     // Step 1: If '/stream/?id=' failed (e.g. local server without proxy), remember and try Direct Google stream
-    if (!this.triedDirectFallback && ep.stream_url) {
+    const directUrl = ep.stream_url || (ep.id ? `https://lh3.googleusercontent.com/d/${ep.id}` : '');
+    if (!this.triedDirectFallback && directUrl) {
       console.warn('Luồng /stream/ không phản hồi, tự động chuyển sang VIP 2 (Direct)...');
       this.streamProxyAvailable = false;
       this.triedDirectFallback = true;
       this.updateServerSwitcherUI('direct');
-      this.videoEl.src = ep.stream_url;
+      this.videoEl.src = directUrl;
       this.videoEl.load();
       this.videoEl.play().catch(() => {});
       return;

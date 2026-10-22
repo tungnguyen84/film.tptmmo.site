@@ -158,6 +158,13 @@
       <div class="movie-grid" id="movieGrid">
         <!-- Dynamic Movie Cards Injected Here -->
       </div>
+
+      <!-- LOAD MORE / INFINITE SCROLL TRIGGER -->
+      <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+        <button class="btn-load-more" id="btnLoadMore" onclick="appInstance.renderNextMovieBatch()">
+          ⬇ Xem thêm phim
+        </button>
+      </div>
     </section>
 
   </main>
