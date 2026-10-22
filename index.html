@@ -3,113 +3,385 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#121212">
+  <meta name="theme-color" content="#0b0c10">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>DramaPlay - Xem Phim Ngắn Google Drive</title>
+  <title>DramaPlay PRO - Web Xem Phim Ngắn & Phim Bộ Chuyên Nghiệp</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20261020_pro">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
 </head>
 <body>
 
-  <!-- Top Navigation Header -->
-  <header>
-    <div class="logo">
-      <span>🎬</span> Drama<span>Play</span>
-    </div>
-    <div class="header-actions">
-      <button class="icon-btn" title="Làm mới" onclick="appInstance.fetchData(true)">🔄</button>
-      <button class="icon-btn" title="Cài đặt Google Drive" onclick="appInstance.openSettings()">⚙️</button>
+  <!-- ==================== STICKY TOP NAVBAR ==================== -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <div class="header-left">
+        <a href="#home" class="brand-logo" onclick="appInstance.navigateHome(event)">
+          <div class="logo-icon">▶</div>
+          <div class="logo-text">Drama<span>Play</span> <sup class="pro-badge">PRO</sup></div>
+        </a>
+
+        <nav class="main-nav" id="mainNav">
+          <button class="nav-link active" data-cat="all" onclick="appInstance.selectCategory('all')">Trang Chủ</button>
+          <button class="nav-link" data-cat="tong-tai" onclick="appInstance.selectCategory('tong-tai')">Tổng Tài</button>
+          <button class="nav-link" data-cat="trong-sinh" onclick="appInstance.selectCategory('trong-sinh')">Trọng Sinh</button>
+          <button class="nav-link" data-cat="co-trang" onclick="appInstance.selectCategory('co-trang')">Cổ Trang</button>
+          <button class="nav-link" data-cat="hanh-dong" onclick="appInstance.selectCategory('hanh-dong')">Kỳ Bí & Hành Động</button>
+          <button class="nav-link" data-cat="long-tieng" onclick="appInstance.selectCategory('long-tieng')">🎙️ Lồng Tiếng</button>
+        </nav>
+      </div>
+
+      <div class="header-right">
+        <!-- Smart Search Box -->
+        <div class="search-wrapper" id="searchWrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Tìm tên phim (hỗ trợ gõ không dấu)..." autocomplete="off">
+          <button class="search-clear" id="searchClearBtn" style="display: none;" onclick="appInstance.clearSearch()" title="Xóa tìm kiếm">✕</button>
+          <!-- Instant Search Dropdown -->
+          <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+
+        <div class="header-actions">
+          <button class="action-pill" onclick="appInstance.selectCategory('history')" title="Lịch sử đang xem">
+            <span>🕒</span>
+            <span class="pill-label">Đang xem</span>
+            <span class="badge-count" id="historyCountBadge" style="display: none;">0</span>
+          </button>
+          <button class="action-pill" onclick="appInstance.selectCategory('favorites')" title="Tủ phim yêu thích">
+            <span>❤️</span>
+            <span class="pill-label">Tủ phim</span>
+            <span class="badge-count" id="favCountBadge" style="display: none;">0</span>
+          </button>
+          <button class="icon-btn" title="Đồng bộ / Làm mới kho phim" onclick="appInstance.fetchData(true)">🔄</button>
+          <button class="icon-btn" title="Cài đặt nguồn Google Drive" onclick="appInstance.openSettings()">⚙️</button>
+        </div>
+      </div>
     </div>
   </header>
 
-  <!-- Main Content Area -->
-  <main>
-    <!-- Continue Watching Quick Banner -->
-    <div class="resume-banner" id="resumeBanner" style="display: none;">
-      <div class="resume-info">
-        <h4>Tiếp tục xem</h4>
-        <p id="resumeTitle">Tuột Mất Luna - Tập 01</p>
+  <!-- ==================== MAIN HOME & CATALOG VIEW ==================== -->
+  <main class="main-container" id="homeView">
+
+    <!-- HERO SPOTLIGHT CAROUSEL -->
+    <section class="hero-section" id="heroSection">
+      <div class="hero-card" id="heroCard">
+        <div class="hero-backdrop" id="heroBackdrop"></div>
+        <div class="hero-gradient"></div>
+        <div class="hero-content">
+          <div class="hero-poster-wrap">
+            <img id="heroPoster" src="" alt="Poster" class="hero-poster">
+            <span class="hero-ep-tag" id="heroEpTag">Full 50 Tập</span>
+          </div>
+          <div class="hero-info">
+            <div class="hero-badges" id="heroBadges">
+              <span class="tag-hot">🔥 TOP THỊNH HÀNH</span>
+              <span class="tag-genre">Tổng Tài</span>
+            </div>
+            <h1 class="hero-title" id="heroTitle">Đang tải phim nổi bật...</h1>
+            <p class="hero-desc" id="heroDesc">Khám phá kho phim ngắn đặc sắc với chất lượng HD mượt mà, tự động chuyển tập thông minh và lưu tiến độ xem trên mọi thiết bị.</p>
+            <div class="hero-buttons">
+              <button class="btn-hero-play" id="heroPlayBtn">
+                <span>▶</span> Xem Phim Ngay
+              </button>
+              <button class="btn-hero-secondary" id="heroFavBtn">
+                <span>🤍</span> Lưu Tủ Phim
+              </button>
+              <button class="btn-hero-secondary" id="heroRandomBtn" onclick="appInstance.playRandomMovie()" title="Xem một bộ phim ngẫu nhiên">
+                <span>🎲</span> Xem Ngẫu Nhiên
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Hero Navigation Dots -->
+        <div class="hero-dots" id="heroDots"></div>
       </div>
-      <button class="resume-btn">
-        ▶ Xem tiếp
-      </button>
-    </div>
+    </section>
 
-    <!-- Search Input -->
-    <div class="search-box">
-      <span>🔍</span>
-      <input type="text" id="searchInput" placeholder="Tìm kiếm bộ phim...">
-    </div>
+    <!-- CONTINUE WATCHING ROW (Multi-Movie History) -->
+    <section class="continue-section" id="continueSection" style="display: none;">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2>🕒 Tiếp Tục Xem</h2>
+          <span class="section-subtitle">Xem tiếp đúng tập và giây bạn đang dừng</span>
+        </div>
+        <button class="btn-text-danger" onclick="appInstance.clearAllHistory()">Xóa lịch sử</button>
+      </div>
+      <div class="continue-carousel" id="continueCarousel">
+        <!-- Injected by JS -->
+      </div>
+    </section>
 
-    <!-- Movie Catalog Section -->
-    <div class="section-title">
-      <span>Kho Phim Của Bạn</span>
-      <span style="font-size: 0.8rem; color: var(--text-sub); font-weight: normal;">Vuốt để chuyển tập</span>
-    </div>
-    <div class="movie-grid" id="movieGrid">
-      <!-- Dynamic Movies Injected Here -->
-    </div>
+    <!-- SMART FILTER & SORT TOOLBAR -->
+    <section class="catalog-section" id="catalogSection">
+      <div class="filter-bar">
+        <div class="category-pills" id="categoryPills">
+          <button class="cat-pill active" data-cat="all" onclick="appInstance.selectCategory('all')">🌐 Tất cả phim</button>
+          <button class="cat-pill" data-cat="tong-tai" onclick="appInstance.selectCategory('tong-tai')">💼 Tổng Tài & Ngôn Tình</button>
+          <button class="cat-pill" data-cat="trong-sinh" onclick="appInstance.selectCategory('trong-sinh')">🔥 Trọng Sinh & Báo Thù</button>
+          <button class="cat-pill" data-cat="co-trang" onclick="appInstance.selectCategory('co-trang')">🏮 Cổ Trang & Xuyên Không</button>
+          <button class="cat-pill" data-cat="hanh-dong" onclick="appInstance.selectCategory('hanh-dong')">⚡ Kỳ Bí & Hành Động</button>
+          <button class="cat-pill" data-cat="long-tieng" onclick="appInstance.selectCategory('long-tieng')">🎙️ Bản Lồng Tiếng</button>
+          <button class="cat-pill" data-cat="favorites" onclick="appInstance.selectCategory('favorites')">❤️ Tủ Phim Đã Lưu</button>
+          <button class="cat-pill" data-cat="history" onclick="appInstance.selectCategory('history')">🕒 Đã Xem Gần Đây</button>
+        </div>
+
+        <div class="sub-filter-row">
+          <div class="catalog-heading">
+            <h2 id="catalogTitle">Kho Phim Đặc Sắc</h2>
+            <span class="movie-count-badge" id="movieCountBadge">0 bộ phim</span>
+          </div>
+
+          <div class="filter-selects">
+            <select id="lengthFilter" class="pro-select" onchange="appInstance.applyFilters()">
+              <option value="all">📏 Tất cả thời lượng</option>
+              <option value="short">Ngắn (&lt; 45 tập)</option>
+              <option value="medium">Vừa (45 - 75 tập)</option>
+              <option value="long">Dài (&gt; 75 tập)</option>
+            </select>
+
+            <select id="sortSelect" class="pro-select" onchange="appInstance.applyFilters()">
+              <option value="default">✨ Đề cử cho bạn</option>
+              <option value="recent">🕒 Mới xem gần đây</option>
+              <option value="ep_desc">📈 Nhiều tập nhất</option>
+              <option value="ep_asc">📉 Ít tập nhất</option>
+              <option value="name_asc">🔤 Tên phim A → Z</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOVIE GRID -->
+      <div class="movie-grid" id="movieGrid">
+        <!-- Dynamic Movie Cards Injected Here -->
+      </div>
+    </section>
+
   </main>
 
-  <!-- FULLSCREEN VERTICAL VIDEO PLAYER (TikTok / ReelShort Style) -->
+  <!-- ==================== DEDICATED THEATER & SHORT-DRAMA PLAYER VIEW ==================== -->
   <div class="player-modal" id="playerModal">
-    <div class="video-wrapper">
-      <video id="mainVideo" playsinline webkit-playsinline autoplay></video>
-      <iframe id="driveEmbed" class="drive-embed" style="display: none;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+    <div class="theater-container" id="theaterContainer">
 
-      <!-- Center Big Play Button (Shows when paused) -->
-      <div class="center-play-btn" id="centerPlayBtn">▶</div>
+      <!-- LEFT / MAIN COLUMN: VIDEO STAGE -->
+      <div class="video-stage" id="videoStage">
 
-      <!-- Top Overlay Bar (Ở trên đỉnh đầu, hoàn toàn không che phụ đề phía dưới) -->
-      <div class="player-top-bar">
-        <button class="icon-btn" onclick="appInstance.closePlayer()" style="background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); width: 36px; height: 36px; border-radius: 50%;">
-          ✕
-        </button>
-        <div class="current-info">
-          <div class="current-movie-name" id="currentMovieName">Tên Bộ Phim</div>
-          <div class="current-ep-name" id="currentEpName">Tập 01</div>
+        <!-- TOP BAR OVERLAY -->
+        <div class="player-top-bar" id="playerTopBar">
+          <div class="top-bar-left">
+            <button class="btn-back-catalog" onclick="appInstance.closePlayer()" title="Quay lại trang chủ (Esc)">
+              <span>←</span> <span class="back-text">Kho Phim</span>
+            </button>
+            <div class="playing-meta">
+              <div class="current-movie-name" id="currentMovieName">Tên Bộ Phim</div>
+              <div class="current-ep-badge" id="currentEpName">Tập 01 / 50</div>
+            </div>
+          </div>
+
+          <div class="top-bar-right">
+            <!-- Server Switcher -->
+            <div class="server-switcher" id="serverSwitcher" title="Đổi luồng phát nếu mạng chậm">
+              <button class="srv-btn active" data-srv="stream" onclick="appInstance.switchServer('stream')">⚡ VIP 1</button>
+              <button class="srv-btn" data-srv="direct" onclick="appInstance.switchServer('direct')">🌐 VIP 2</button>
+              <button class="srv-btn" data-srv="embed" onclick="appInstance.switchServer('embed')">☁️ Drive</button>
+            </div>
+
+            <!-- View Mode Toggle (Cinema Split vs Vertical Full) -->
+            <button class="btn-top-tool" id="btnViewMode" onclick="appInstance.toggleViewMode()" title="Đổi giao diện Rạp Phim / Toàn màn hình dọc">
+              📱 Chế độ Dọc
+            </button>
+
+            <!-- Open Episode Drawer (Especially useful in Vertical/Fullscreen mode) -->
+            <button class="btn-top-tool btn-ep-drawer-trigger" id="btnEpList" onclick="appInstance.openEpisodesDrawer()">
+              📑 Chọn Tập
+            </button>
+          </div>
         </div>
-        <div class="player-controls-right">
-          <button class="btn-ep-list" id="btnEpList" style="padding: 6px 12px; font-size: 0.8rem;">
-            📑 Danh Sách Tập
-          </button>
+
+        <!-- VIDEO CANVAS AREA -->
+        <div class="video-canvas" id="videoCanvas">
+          <video id="mainVideo" playsinline webkit-playsinline preload="auto"></video>
+          <iframe id="driveEmbed" class="drive-embed" style="display: none;" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+
+          <!-- Buffering / Loading Spinner -->
+          <div class="video-loader" id="videoLoader" style="display: none;">
+            <div class="spinner-ring"></div>
+            <span id="videoLoaderText">Đang tải tập phim...</span>
+          </div>
+
+          <!-- Gesture / Action Feedback Toast (Double tap, 2x hold, ep switch) -->
+          <div class="gesture-toast" id="gestureToast"></div>
+
+          <!-- Center Play / Pause Button -->
+          <button class="center-play-btn" id="centerPlayBtn" aria-label="Phát / Tạm dừng">▶</button>
+
+          <!-- Right-Side Floating Quick Controls (TikTok / ReelShort Style) -->
+          <div class="floating-side-actions" id="floatingSideActions">
+            <button class="side-action-btn" onclick="appInstance.prevEpisode()" title="Tập trước (Phím P)">
+              <span class="side-icon">⏮</span>
+              <span class="side-label">Tập trước</span>
+            </button>
+            <button class="side-action-btn" onclick="appInstance.nextEpisode()" title="Tập tiếp theo (Phím N)">
+              <span class="side-icon">⏭</span>
+              <span class="side-label">Tập tiếp</span>
+            </button>
+            <button class="side-action-btn" id="sideFavBtn" onclick="appInstance.toggleCurrentMovieFavorite()" title="Yêu thích bộ phim này">
+              <span class="side-icon">🤍</span>
+              <span class="side-label">Lưu phim</span>
+            </button>
+            <button class="side-action-btn" onclick="appInstance.openEpisodesDrawer()" title="Danh sách tập">
+              <span class="side-icon">📑</span>
+              <span class="side-label" id="sideEpLabel">Tập 1</span>
+            </button>
+          </div>
+
+          <!-- Auto-Next Countdown Toast -->
+          <div class="auto-next-overlay" id="autoNextOverlay">
+            <div class="auto-next-text">
+              Chuyển sang <strong id="autoNextEpTitle">Tập 02</strong> sau <strong id="autoNextCountdown">2</strong>s
+            </div>
+            <div class="auto-next-actions">
+              <button class="auto-next-btn primary" onclick="appInstance.nextEpisode()">Phát ngay ⏭</button>
+              <button class="auto-next-btn ghost" onclick="appInstance.cancelAutoNext()">Ở lại</button>
+            </div>
+          </div>
         </div>
+
+        <!-- CUSTOM PRO BOTTOM VIDEO CONTROLS (Does NOT block subtitles!) -->
+        <div class="player-bottom-controls" id="playerBottomControls">
+          <!-- Interactive Seek / Timeline Bar -->
+          <div class="timeline-wrapper" id="timelineWrapper">
+            <div class="timeline-track">
+              <div class="timeline-buffered" id="timelineBuffered"></div>
+              <div class="timeline-progress" id="timelineProgress">
+                <div class="timeline-thumb"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls Buttons Row -->
+          <div class="controls-bar-row">
+            <div class="controls-left">
+              <button class="ctrl-btn play-pause-btn" id="btnPlayPause" onclick="appInstance.togglePlay()" title="Phát / Tạm dừng (Space)">
+                ▶
+              </button>
+              <button class="ctrl-btn" onclick="appInstance.prevEpisode()" title="Tập trước (P)">⏮</button>
+              <button class="ctrl-btn" onclick="appInstance.nextEpisode()" title="Tập tiếp theo (N)">⏭</button>
+              <button class="ctrl-btn hide-xs" onclick="appInstance.seekRelative(-10)" title="Tua lùi 10 giây (←)">⏪ 10s</button>
+              <button class="ctrl-btn hide-xs" onclick="appInstance.seekRelative(10)" title="Tua tới 10 giây (→)">10s ⏩</button>
+
+              <!-- Volume Control -->
+              <div class="volume-group hide-xs">
+                <button class="ctrl-btn" id="btnMute" onclick="appInstance.toggleMute()" title="Bật/Tắt tiếng (M)">🔊</button>
+                <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.05" value="1" oninput="appInstance.setVolume(this.value)">
+              </div>
+
+              <!-- Time Indicator -->
+              <div class="time-display">
+                <span id="currentTimeText">00:00</span>
+                <span class="time-sep">/</span>
+                <span id="durationText">00:00</span>
+              </div>
+            </div>
+
+            <div class="controls-right">
+              <!-- Auto-Next Toggle -->
+              <button class="ctrl-pill active" id="btnAutoNextToggle" onclick="appInstance.toggleAutoNextSetting()" title="Tự động phát tập tiếp theo khi hết tập">
+                🔄 Tự chuyển: BẬT
+              </button>
+
+              <!-- Playback Speed -->
+              <button class="ctrl-pill" id="btnSpeed" onclick="appInstance.cyclePlaybackSpeed()" title="Tốc độ phát video">
+                1.0x
+              </button>
+
+              <!-- Fullscreen Button -->
+              <button class="ctrl-btn" id="btnFullscreen" onclick="appInstance.toggleFullscreen()" title="Toàn màn hình (F)">
+                ⛶
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DRIVE EMBED PERSISTENT FOOTER BAR (Only visible in Drive Iframe fallback mode so user is NEVER stuck) -->
+        <div class="drive-fallback-bar" id="driveFallbackBar" style="display: none;">
+          <button class="drive-nav-btn" onclick="appInstance.prevEpisode()">⏮ Tập trước</button>
+          <button class="drive-nav-btn highlight" onclick="appInstance.openEpisodesDrawer()" id="driveEpBtn">📑 Chọn Tập (1/50)</button>
+          <button class="drive-nav-btn" onclick="appInstance.nextEpisode()">Tập tiếp theo ⏭</button>
+        </div>
+
       </div>
 
-      <!-- Floating Controls / Touch Helpers (Nằm ở cạnh phải trên cao) -->
-      <div class="swipe-hint">
-        <button class="btn-floating" title="Tập trước" onclick="appInstance.prevEpisode()">▲</button>
-        <button class="btn-floating" title="Tập tiếp theo" onclick="appInstance.nextEpisode()">▼</button>
-      </div>
+      <!-- RIGHT COLUMN (ON DESKTOP) / PANEL: EPISODES & MOVIE DETAILS SIDEBAR -->
+      <aside class="theater-sidebar" id="theaterSidebar">
+        <!-- Movie Summary Header -->
+        <div class="sidebar-movie-info">
+          <img id="sidebarPoster" src="" alt="Poster" class="sidebar-poster">
+          <div class="sidebar-meta">
+            <h3 id="sidebarMovieTitle">Tên Bộ Phim</h3>
+            <div class="sidebar-tags" id="sidebarTags"></div>
+            <div class="sidebar-progress-text" id="sidebarProgressText">Đã xem 1/50 tập</div>
+            <div class="sidebar-actions">
+              <button class="btn-sidebar-action" id="sidebarFavBtn" onclick="appInstance.toggleCurrentMovieFavorite()">🤍 Yêu thích</button>
+              <button class="btn-sidebar-action" onclick="appInstance.startPlayMovie(appInstance.currentMovie, 0, 0)">🔄 Xem từ Tập 1</button>
+            </div>
+          </div>
+        </div>
 
-      <!-- Auto-Next Countdown Toast Overlay -->
-      <div class="auto-next-overlay" id="autoNextOverlay">
-        <span>Tự động phát tập tiếp theo sau <strong id="autoNextCountdown">2</strong>s...</span>
-        <button class="auto-next-btn" onclick="appInstance.nextEpisode()">Phát ngay</button>
-        <button class="auto-next-btn" style="background: transparent; color: #fff; border: 1px solid #fff;" onclick="appInstance.cancelAutoNext()">Hủy</button>
-      </div>
+        <!-- Episode Selector Section -->
+        <div class="sidebar-episodes-box">
+          <div class="ep-box-header">
+            <div class="ep-box-title">
+              <span>📑 Danh Sách Tập</span>
+              <span class="ep-total-pill" id="sidebarEpTotal">50 tập</span>
+            </div>
+            <!-- Quick Jump Input -->
+            <div class="ep-jump-box">
+              <input type="number" id="epJumpInput" min="1" placeholder="Tập..." onkeydown="if(event.key==='Enter') appInstance.jumpToEpisodeInput()">
+              <button onclick="appInstance.jumpToEpisodeInput()">Đi</button>
+            </div>
+          </div>
+
+          <!-- Episode Range Tabs (e.g. 1-30, 31-60, 61-100) -->
+          <div class="ep-range-tabs" id="sidebarRangeTabs"></div>
+
+          <!-- Episodes Grid -->
+          <div class="sidebar-ep-grid" id="sidebarEpGrid"></div>
+        </div>
+
+        <!-- Related Movies Section -->
+        <div class="sidebar-related-box">
+          <h4 class="related-heading">🎬 Phim Hay Cùng Thể Loại</h4>
+          <div class="related-list" id="relatedMoviesList"></div>
+        </div>
+      </aside>
+
     </div>
   </div>
 
-  <!-- Slide-up Episodes Bottom Sheet Drawer -->
+  <!-- ==================== MOBILE EPISODES BOTTOM DRAWER ==================== -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="appInstance.closeEpisodesDrawer()"></div>
   <div class="episodes-drawer" id="episodesDrawer">
     <div class="drawer-header">
-      <div class="drawer-title">Chọn Tập Phim</div>
-      <button class="icon-btn" style="width: 32px; height: 32px;" onclick="appInstance.closeEpisodesDrawer()">✕</button>
+      <div>
+        <div class="drawer-title" id="drawerMovieTitle">Chọn Tập Phim</div>
+        <div class="drawer-subtitle" id="drawerSubtitle">Chạm vào số tập để phát ngay</div>
+      </div>
+      <button class="icon-btn" onclick="appInstance.closeEpisodesDrawer()">✕</button>
     </div>
-    <div class="episodes-grid" id="episodesGrid">
-      <!-- Injected Episodes Numbers -->
-    </div>
+    <div class="ep-range-tabs" id="drawerRangeTabs" style="margin-bottom: 10px;"></div>
+    <div class="episodes-grid" id="episodesGrid"></div>
   </div>
 
-  <!-- Settings / Google Drive Connect Modal -->
+  <!-- ==================== SETTINGS / GOOGLE DRIVE MODAL ==================== -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>⚙️ Kết Nối Google Drive</h3>
-        <button class="icon-btn" style="width: 32px; height: 32px;" onclick="appInstance.closeSettings()">✕</button>
+        <h3>⚙️ Cài Đặt & Kết Nối Kho Phim</h3>
+        <button class="icon-btn" onclick="appInstance.closeSettings()">✕</button>
       </div>
 
       <div class="form-group">
@@ -123,23 +395,44 @@
       </div>
 
       <button class="btn-primary" onclick="appInstance.saveSettings()">
-        💾 LƯU & QUÉT PHIM TỪ DRIVE
+        💾 LƯU & ĐỒNG BỘ PHIM TỪ GOOGLE DRIVE
       </button>
 
       <div class="instructions-box">
-        <strong>📌 Hướng dẫn lấy dữ liệu từ Google Drive (1 phút):</strong>
-        <ol>
-          <li>Tạo 1 thư mục trên Google Drive (ví dụ đặt tên: <code>Phim Của Tôi</code>).</li>
-          <li>Mỗi phim bạn tạo 1 thư mục con (ví dụ: <code>Tuot Mat Luna</code>) và tải các tập phim vào đó.</li>
-          <li>Lấy mã <strong>ID Thư Mục</strong> ở cuối link Google Drive: <br>
-              <code>https://drive.google.com/drive/folders/<strong>[ID_THƯ_MỤC]</strong></code>
-          </li>
-          <li>Mở file <code>GoogleAppsScript_Code.gs</code> trong thư mục app, làm theo hướng dẫn tạo Web App miễn phí tại <a href="https://script.google.com" target="_blank" style="color: var(--accent);">script.google.com</a> để lấy đường link URL dán vào đây!</li>
-        </ol>
+        <strong>📌 Phím tắt & Mẹo sử dụng DramaPlay PRO:</strong>
+        <ul>
+          <li><strong>Trên Máy Tính:</strong> Nhấn <code>Space</code> để Tạm dừng/Phát, <code>← / →</code> để tua 5 giây, <code>N / P</code> để qua tập mới / lùi tập, <code>F</code> để mở toàn màn hình.</li>
+          <li><strong>Trên Điện Thoại:</strong> Chạm 1 lần để Tạm dừng/Phát, chạm đúp 2 bên để tua ±10s, <strong>nhấn giữ màn hình</strong> để tua nhanh tốc độ 2.0x, vuốt lên/xuống ở Chế độ Dọc để chuyển tập.</li>
+          <li><strong>Đổi Server (VIP 1 / VIP 2 / Drive):</strong> Nếu một tập phim tải chậm, hãy bấm chuyển giữa <code>⚡ VIP 1</code>, <code>🌐 VIP 2</code> hoặc <code>☁️ Drive</code> ở góc trên bên phải khung phát phim.</li>
+        </ul>
       </div>
     </div>
   </div>
 
-  <script src="app.js?v=20260925_1525"></script>
+  <!-- ==================== MOBILE BOTTOM NAVIGATION BAR ==================== -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mob-nav-item active" data-mob="all" onclick="appInstance.selectCategory('all')">
+      <span class="mob-icon">🏠</span>
+      <span>Trang chủ</span>
+    </button>
+    <button class="mob-nav-item" data-mob="tong-tai" onclick="appInstance.selectCategory('tong-tai')">
+      <span class="mob-icon">🔥</span>
+      <span>Tổng Tài</span>
+    </button>
+    <button class="mob-nav-item" data-mob="trong-sinh" onclick="appInstance.selectCategory('trong-sinh')">
+      <span class="mob-icon">⚡</span>
+      <span>Trọng Sinh</span>
+    </button>
+    <button class="mob-nav-item" data-mob="history" onclick="appInstance.selectCategory('history')">
+      <span class="mob-icon">🕒</span>
+      <span>Đang xem</span>
+    </button>
+    <button class="mob-nav-item" data-mob="favorites" onclick="appInstance.selectCategory('favorites')">
+      <span class="mob-icon">❤️</span>
+      <span>Tủ phim</span>
+    </button>
+  </nav>
+
+  <script src="app.js?v=20261020_pro"></script>
 </body>
 </html>

@@ -1,46 +1,46 @@
 @echo off
-title DramaPlay - May Chu Xem Phim
+chcp 65001 >nul
+title DramaPlay PRO - May Chu Xem Phim Chuyen Nghiep
 cd /d "%~dp0"
 
 echo ======================================================================
-echo             DRAMAPLAY - TRINH XEM PHIM NGAN CHUYEN NGHIEP
+echo           DRAMAPLAY PRO - HE THONG WEB XEM PHIM CHUYEN NGHIEP
 echo ======================================================================
 echo.
-echo [1] Dang khoi dong may chu web tren may tinh cua ban...
+echo [1] Dang khoi dong may chu web tai http://localhost:8080 ...
 echo.
 
-python -c "
-import socket, http.server, socketserver, os, webbrowser
-
-PORT = 8080
-Handler = http.server.SimpleHTTPRequestHandler
-
-def get_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.connect(('8.8.8.8', 80))
-        ip = s.getsockname()[0]
-    except Exception:
-        ip = '127.0.0.1'
-    finally:
-        s.close()
-    return ip
-
-local_ip = get_ip()
-print('='*60)
-print(f'-> XEM TREN MAY TINH:   http://localhost:{PORT}')
-print(f'-> XEM TREN DIEN THOAI: http://{local_ip}:{PORT}')
-print('='*60)
-print('\n[MEO HAY]: Tren dien thoai Android, hay mo trinh duyet Chrome,')
-print(f'truy cap: http://{local_ip}:{PORT}')
-print('Bam vao dau 3 cham o goc phai -> Chon \"Them vao Man hinh chinh\"')
-print('de bien thanh App xem phim thuc thu!')
-print('\nDang chay may chu... (Nhan Ctrl + C de dung)\n')
-
-webbrowser.open(f'http://localhost:{PORT}')
-
-with socketserver.TCPServer(('', PORT), Handler) as httpd:
-    httpd.serve_forever()
-"
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$port = 8080; " ^
+  "$root = (Get-Location).Path; " ^
+  "$listener = New-Object System.Net.HttpListener; " ^
+  "$listener.Prefixes.Add(\"http://localhost:$port/\"); " ^
+  "$listener.Start(); " ^
+  "Write-Host '==============================================================' -ForegroundColor Cyan; " ^
+  "Write-Host \" -> TRUY CAP NGAY TREN MAY TINH: http://localhost:$port\" -ForegroundColor Green; " ^
+  "Write-Host '==============================================================' -ForegroundColor Cyan; " ^
+  "Write-Host 'Dang chay may chu... (Dong cua so nay hoac nhan Ctrl + C de dung)'; " ^
+  "Start-Process \"http://localhost:$port\"; " ^
+  "$mimeMap = @{'.html'='text/html; charset=utf-8'; '.css'='text/css; charset=utf-8'; '.js'='application/javascript; charset=utf-8'; '.json'='application/json; charset=utf-8'; '.jpg'='image/jpeg'; '.jpeg'='image/jpeg'; '.png'='image/png'; '.svg'='image/svg+xml'; '.ico'='image/x-icon'}; " ^
+  "while ($listener.IsListening) { " ^
+  "  try { " ^
+  "    $ctx = $listener.GetContext(); " ^
+  "    $req = $ctx.Request; " ^
+  "    $res = $ctx.Response; " ^
+  "    $relPath = $req.Url.LocalPath.TrimStart('/'); " ^
+  "    if ([string]::IsNullOrEmpty($relPath)) { $relPath = 'index.html' } " ^
+  "    $filePath = Join-Path $root ($relPath -replace '/','\'); " ^
+  "    if (Test-Path $filePath -PathType Leaf) { " ^
+  "      $ext = [System.IO.Path]::GetExtension($filePath).ToLower(); " ^
+  "      $res.ContentType = if ($mimeMap.ContainsKey($ext)) { $mimeMap[$ext] } else { 'application/octet-stream' }; " ^
+  "      $bytes = [System.IO.File]::ReadAllBytes($filePath); " ^
+  "      $res.ContentLength64 = $bytes.Length; " ^
+  "      $res.OutputStream.Write($bytes, 0, $bytes.Length); " ^
+  "    } else { " ^
+  "      $res.StatusCode = 404; " ^
+  "    } " ^
+  "    $res.Close(); " ^
+  "  } catch { break } " ^
+  "}"
 
 pause
