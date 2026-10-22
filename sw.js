@@ -1,10 +1,11 @@
-const CACHE_NAME = 'dramaplay-pro-v5';
+const CACHE_NAME = 'trumdrama-v20261022-v1';
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
   './app.js',
   './js/app.js',
+  './logo.png',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png'
@@ -39,6 +40,7 @@ self.addEventListener('fetch', (e) => {
     url.includes('drive.google.com') ||
     url.includes('googleapis.com') ||
     url.includes('script.google.com') ||
+    url.includes('trumdrama.com') ||
     url.includes('.mp4')
   ) {
     return;

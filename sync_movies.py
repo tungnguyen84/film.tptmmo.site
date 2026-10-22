@@ -168,10 +168,13 @@ def resolve_initial_poster(movie, catalog):
     norm_k = normalize_key(raw_title)
     slug_k = make_slug(raw_title)
 
-    if norm_k in catalog and catalog[norm_k].get('cover'):
-        return catalog[norm_k]['cover']
-    if slug_k in catalog and catalog[slug_k].get('cover'):
-        return catalog[slug_k]['cover']
+    for k in (norm_k, slug_k):
+        if k in catalog:
+            entry = catalog[k]
+            if entry.get('cover'):
+                return entry['cover']
+            if entry.get('id'):
+                return f"https://trumdrama.com/_next/image?url=%2Fapi%2Fv1%2Fimage%2F{entry['id']}&w=384&q=75"
 
     if movie.get('episodes') and len(movie['episodes']) > 0:
         first_fid = movie['episodes'][0]['id']
@@ -331,10 +334,14 @@ def sync():
         norm_k = normalize_key(raw_title)
         slug_k = make_slug(raw_title)
 
-        if norm_k in catalog and catalog[norm_k].get('cover'):
-            candidates.append(catalog[norm_k]['cover'])
-        if slug_k in catalog and catalog[slug_k].get('cover'):
-            candidates.append(catalog[slug_k]['cover'])
+        for k in (norm_k, slug_k):
+            if k in catalog:
+                entry = catalog[k]
+                if entry.get('cover'):
+                    candidates.append(entry['cover'])
+                if entry.get('id'):
+                    candidates.append(f"https://trumdrama.com/_next/image?url=%2Fapi%2Fv1%2Fimage%2F{entry['id']}&w=384&q=75")
+                    candidates.append(f"https://trumdrama.com/api/v1/image/{entry['id']}")
         if m.get('episodes') and len(m['episodes']) > 0:
             first_fid = m['episodes'][0]['id']
             candidates.append(f"https://drive.google.com/thumbnail?id={first_fid}&sz=w400")

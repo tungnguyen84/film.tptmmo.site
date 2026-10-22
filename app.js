@@ -1,92 +1,101 @@
 /**
- * DRAMAPLAY PRO - NEXT-GEN MOVIE & SHORT DRAMA STREAMING PLATFORM
- * Hỗ trợ: Giao diện Rạp Phim & Chế độ Vuốt Dọc, Thanh tua thời gian, Đa Server,
- * Tìm kiếm không dấu, Phân loại thể loại tự động, Lịch sử đa phim & Tủ phim yêu thích.
+ * TRUMDRAMA WEB APP - FULL REPLICA UI & HIGH-SPEED STREAMING ENGINE
+ * Giao diện chuẩn 1:1 https://trumdrama.com/
+ * Hỗ trợ: Trang Chủ (3D Coverflow Hero), Thể Loại, Khám Phá (Bộ lọc & Tìm kiếm không dấu),
+ * Trang Chi Tiết Phim (/phim/<id>), Trang Xem Tập Phim (/phim/<id>/tap-<n>),
+ * Đa luồng phát (VIP 1 /stream/, VIP 2 Direct, Google Drive Embed), Tự chuyển tập, Lịch sử & Yêu thích.
  */
 
-const DEMO_MOVIES = [
-  {
-    id: "demo_1",
-    title: "Tuột Mất Luna, Gặp Lại Nữ Hoàng",
-    total_episodes: 5,
-    episodes: [
-      { id: "e1", name: "Tập 01", stream_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" },
-      { id: "e2", name: "Tập 02", stream_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" },
-      { id: "e3", name: "Tập 03", stream_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4" },
-      { id: "e4", name: "Tập 04", stream_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4" },
-      { id: "e5", name: "Tập 05", stream_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4" }
-    ]
-  }
+const TRUMDRAMA_GENRES = [
+  { name: 'Vả Mặt Xấu Xa', slug: 'va-mat-xau-xa' },
+  { name: 'Hiện Đại', slug: 'hien-dai' },
+  { name: 'Báo Thù', slug: 'bao-thu' },
+  { name: 'Tổng Tài', slug: 'tong-tai' },
+  { name: 'Trùng Sinh', slug: 'trung-sinh' },
+  { name: 'Lồng Tiếng 🎙️', slug: 'long-tieng' },
+  { name: 'Tình Yêu Cưỡng Ép', slug: 'tinh-yeu-cuong-ep' },
+  { name: 'Ngọt Sủng', slug: 'ngot-sung' },
+  { name: 'Cổ Đại', slug: 'co-dai' },
+  { name: 'Xuyên Không', slug: 'xuyen-khong' },
+  { name: 'Hành Động', slug: 'hanh-dong' },
+  { name: 'Xã Hội Đen', slug: 'xa-hoi-den' },
+  { name: 'Thân Phận Bí Ẩn', slug: 'than-phan-bi-an' },
+  { name: 'Hối Hận', slug: 'hoi-han' },
+  { name: 'Gương Vỡ Lại Lành', slug: 'guong-vo-lai-lanh' },
+  { name: 'Cưới Trước Yêu Sau', slug: 'cuoi-truoc-yeu-sau' },
+  { name: 'Tình Cảm Đô Thị', slug: 'tinh-cam-do-thi' },
+  { name: 'Hệ Thống', slug: 'he-thong' },
+  { name: 'Kịch Tính', slug: 'kich-tinh' },
+  { name: 'Cường Giả Tái Xuất', slug: 'cuong-gia-tai-xuat' },
+  { name: 'Gia Đình & Hôn Nhân', slug: 'gia-dinh' },
+  { name: 'Giả Tưởng & Kỳ Bí', slug: 'gia-tuong' }
 ];
 
-const CATEGORY_META = {
-  'all': { title: 'Kho Phim Đặc Sắc', desc: 'Tất cả các bộ phim ngắn hot nhất' },
-  'tong-tai': { title: '💼 Tổng Tài & Ngôn Tình Hào Môn', desc: 'Tình yêu tổng tài, hào môn thế gia, cưới trước yêu sau' },
-  'trong-sinh': { title: '🔥 Trọng Sinh & Báo Thù Phản Công', desc: 'Sống lại một đời, xoay chuyển càn khôn, vả mặt kẻ phản bội' },
-  'co-trang': { title: '🏮 Cổ Trang & Xuyên Không Cung Đấu', desc: 'Vương phi, thái tử, xuyên không cổ đại đặc sắc' },
-  'hanh-dong': { title: '⚡ Kỳ Bí, Hành Động & Đô Thị', desc: 'Đặc vụ, tu tiên, kỳ án dân gian, siêu năng lực' },
-  'long-tieng': { title: '🎙️ Phim Bản Lồng Tiếng / Thuyết Minh', desc: 'Xem phim không cần đọc phụ đề, lồng tiếng cảm xúc' },
-  'favorites': { title: '❤️ Tủ Phim Yêu Thích Của Bạn', desc: 'Danh sách các bộ phim bạn đã đánh dấu lưu lại' },
-  'history': { title: '🕒 Lịch Sử Phim Đã Xem', desc: 'Các bộ phim bạn đang theo dõi gần đây' }
-};
+const SOURCE_BADGES = ['DramaBox', 'ReelShort', 'NetShort', 'DramaWave', 'VibeShort', 'GoodShort'];
 
-class DramaPlayApp {
+const SVG_PLAY_CARD = `<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M15.45 7.48C17.07 8.83 17.07 11.17 15.45 12.52C14.56 13.26 13.38 14.14 12.07 14.86C10.78 15.57 9.42 16.11 8.3 16.47C6.24 17.16 4.09 15.93 3.72 13.89C3.52 12.79 3.33 11.4 3.33 10C3.33 8.6 3.52 7.21 3.72 6.11C4.09 4.07 6.24 2.84 8.3 3.53C9.42 3.89 10.78 4.43 12.07 5.13C13.38 5.86 14.56 6.74 15.45 7.48Z" fill="#111218"></path></svg>`;
+
+class TrumDramaApp {
   constructor() {
     this.movies = [];
-    this.filteredMovies = [];
-    this.currentCategory = 'all';
+    this.catalogMap = {};
+    this.currentView = 'home'; // 'home' | 'genres' | 'explore' | 'favorites' | 'history' | 'detail' | 'watch'
+
+    // Explore state
+    this.exploreSort = 'popular';
+    this.exploreGenre = '';
+    this.exploreQuery = '';
+    this.explorePage = 1;
+    this.explorePageSize = 32;
+
+    // Detail & Watch state
+    this.detailMovie = null;
     this.currentMovie = null;
     this.currentEpIndex = 0;
     this.currentEpRangeIndex = 0;
-    this.epPageSize = 30;
-    this.gridPageSize = 48;
-    this.renderedCount = 0;
+    this.epPageSize = 50;
 
     // Player state
-    this.serverMode = 'stream'; // 'stream' (/stream/?id=) | 'direct' (lh3) | 'embed' (drive preview)
-    this.streamProxyAvailable = true; // Auto-detects if /stream/ works on current host
+    this.serverMode = 'stream'; // 'stream' | 'direct' | 'embed'
+    this.streamProxyAvailable = true;
     this.isDriveMode = false;
-    this.isVerticalMode = window.innerWidth <= 640; // Default vertical on phone, theater on PC
     this.autoNextEnabled = localStorage.getItem('dramaplay_autonext') !== 'false';
     this.autoNextTimer = null;
-    this.playbackSpeeds = [1.0, 1.25, 1.5, 2.0, 0.75];
-    this.speedIndex = 0;
+    this.currentSpeed = 1.0;
     this.wakeLock = null;
+    this.isScrubbing = false;
+    this.controlsTimeout = null;
+    this.toastTimeout = null;
 
-    // Touch & Gesture state
+    // Touch gestures state
     this.touchStartY = 0;
     this.touchStartX = 0;
     this.longPressTimer = null;
     this.isLongPressSpeed = false;
     this.savedSpeedBeforeHold = 1.0;
-    this.controlsTimeout = null;
-    this.singleTapTimeout = null;
-    this.toastTimeout = null;
-    this.isScrubbing = false;
 
-    // Hero Spotlight state
+    // Hero Coverflow state
     this.heroMovies = [];
     this.heroIndex = 0;
     this.heroTimer = null;
 
-    // Persistent User Data (History & Favorites)
+    // User persistent data
     this.watchHistory = this.loadWatchHistory();
     this.favorites = this.loadFavorites();
 
     this.initElements();
     this.loadSettings();
     this.initEvents();
-    this.updateBadges();
+    this.updateNavBadges();
     this.updateAutoNextUI();
-    this.updateViewModeUI();
     this.fetchData();
   }
 
-  /* ==================== UTILITIES & DATA ENRICHMENT ==================== */
+  /* ==================== STRING & METADATA HELPERS ==================== */
 
   removeAccents(str) {
     if (!str) return '';
-    return str
+    return String(str)
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/đ/g, 'd')
@@ -94,88 +103,190 @@ class DramaPlayApp {
       .toLowerCase();
   }
 
+  makeSlug(str) {
+    return this.removeAccents(str)
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
   cleanMovieTitle(raw) {
     if (!raw) return 'Phim chưa đặt tên';
-    let t = raw.replace(/_/g, ': ').replace(/\s+/g, ' ').trim();
-    // Viết hoa chữ cái đầu nếu bị viết thường
+    let t = String(raw).replace(/_/g, ': ').replace(/\s+/g, ' ').trim();
     if (t.length > 0 && t[0] === t[0].toLowerCase() && t[0] !== t[0].toUpperCase()) {
       t = t.split(' ').map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : '').join(' ');
     }
     return t;
   }
 
+  hashCode(str) {
+    let h = 0;
+    const s = String(str || '');
+    for (let i = 0; i < s.length; i++) {
+      h = ((h << 5) - h) + s.charCodeAt(i);
+      h |= 0;
+    }
+    return Math.abs(h);
+  }
+
   classifyMovie(rawTitle) {
-    const lower = (rawTitle || '').toLowerCase();
+    const lower = String(rawTitle || '').toLowerCase();
     const noAcc = this.removeAccents(lower);
-    const cats = new Set();
-    const tags = [];
+    const slugSet = new Set();
+    const genreNames = [];
+
+    const addGenre = (slug, name) => {
+      if (!slugSet.has(slug)) {
+        slugSet.add(slug);
+        genreNames.push({ slug, name });
+      }
+    };
 
     const isDubbed = lower.includes('lồng tiếng') || lower.includes('thuyết minh') || noAcc.includes('long tieng');
     if (isDubbed) {
-      cats.add('long-tieng');
-      tags.push('🎙️ Lồng Tiếng');
+      addGenre('long-tieng', 'Lồng Tiếng');
     }
 
-    if (/tái sinh|trọng sinh|cải mệnh|trở lại|báo thù|phản công|hối lỗi|về 1998|từ biệt|cứu vãn|hận thù/.test(lower)) {
-      cats.add('trong-sinh');
-      tags.push('Trọng Sinh • Báo Thù');
+    if (/tái sinh|trọng sinh|trùng sinh|sống lại|cải mệnh|kiếp trước/.test(lower)) {
+      addGenre('trung-sinh', 'Trùng Sinh');
+    }
+    if (/báo thù|trả thù|phản công|hận thù|đòi lại|vạch trần/.test(lower)) {
+      addGenre('bao-thu', 'Báo Thù');
+    }
+    if (/vả mặt|khinh thường|coi thường|nhục mạ|hối hận|phản bội|bắt quả tang/.test(lower)) {
+      addGenre('va-mat-xau-xa', 'Vả Mặt Xấu Xa');
+    }
+    if (/hối hận|ngược tâm|bi kịch|bỏ rơi|ly hôn|vợ cũ|chồng cũ/.test(lower)) {
+      addGenre('hoi-han', 'Hối Hận');
+    }
+    if (/cổ đại|cổ trang|vương phi|thái tử|hoàng hậu|cung|đại đường|vương gia|tướng quân|trẫm|tiên hiệp/.test(lower)) {
+      addGenre('co-dai', 'Cổ Đại');
+    }
+    if (/xuyên không|xuyên sách|hệ thống/.test(lower)) {
+      addGenre('xuyen-khong', 'Xuyên Không');
+    }
+    if (/hệ thống|thức tỉnh/.test(lower)) {
+      addGenre('he-thong', 'Hệ Thống');
+    }
+    if (/mafia|ông trùm|hắc đạo|xã hội đen|băng đảng|sát thủ/.test(lower)) {
+      addGenre('xa-hoi-den', 'Xã Hội Đen');
+    }
+    if (/đặc vụ|vệ sĩ|chiến thần|long vương|vua sói|cường giả|đế chế|võ/.test(lower)) {
+      addGenre('hanh-dong', 'Hành Động');
+      addGenre('cuong-gia-tai-xuat', 'Cường Giả Tái Xuất');
+    }
+    if (/cưỡng ép|cầm tù|chiếm đoạt|thế thân|giao kèo|bóng tối|cấm kỵ|ngoại tình|một đêm/.test(lower)) {
+      addGenre('tinh-yeu-cuong-ep', 'Tình Yêu Cưỡng Ép');
+    }
+    if (/tổng tài|tỷ phú|ceo|hào môn|thừa kế|thiên kim|tiểu thư|chủ tịch|phú hào/.test(lower)) {
+      addGenre('tong-tai', 'Tổng Tài');
+    }
+    if (/cưới|hôn nhân|hôn phu|vợ|chồng|cô dâu|chú rể/.test(lower)) {
+      addGenre('cuoi-truoc-yeu-sau', 'Cưới Trước Yêu Sau');
+    }
+    if (/cưng chiều|ngọt|sủng|bảo mẫu|bé cưng|nhóc tì|mang thai|sinh con/.test(lower)) {
+      addGenre('ngot-sung', 'Ngọt Sủng');
+    }
+    if (/bí ẩn|ẩn danh|thân phận|bí mật/.test(lower)) {
+      addGenre('than-phan-bi-an', 'Thân Phận Bí Ẩn');
+    }
+    if (/gương vỡ|quay lại|tìm lại|năm sau/.test(lower)) {
+      addGenre('guong-vo-lai-lanh', 'Gương Vỡ Lại Lành');
+    }
+    if (/người sói|ma cà rồng|rồng|thần|phép thuật|kỳ án|quái thú/.test(lower)) {
+      addGenre('gia-tuong', 'Giả Tưởng & Kỳ Bí');
     }
 
-    if (/thái tử|vương phi|y phi|đại đường|tân nương|nữ hoàng|cổ trang|thái bình|y quán|hoàng hậu|cung/.test(lower)) {
-      cats.add('co-trang');
-      tags.push('Cổ Trang');
+    if (!slugSet.has('co-dai')) {
+      addGenre('hien-dai', 'Hiện Đại');
+      addGenre('tinh-cam-do-thi', 'Tình Cảm Đô Thị');
     }
-
-    if (/đặc vụ|quái thú|tế sống|kỳ án|thần ẩn|trùm trường|thông thiên|người sói|vua sói|tâm thần|tù long|tu tiên|tà y|vệ sĩ|xác sống|xuất ngũ|tâm lý sư|bóng tối/.test(lower)) {
-      cats.add('hanh-dong');
-      tags.push('Kỳ Bí • Hành Động');
-    }
-
-    if (/tình|yêu|tổng tài|ceo|vợ|tiểu thư|thiên kim|đại gia|hợp đồng|anh trai|bé cưng|trọn đời|mãi là em|vạn vì sao|nhà quê|trang điểm|vũ khúc/.test(lower) || cats.size === 0 || (cats.size === 1 && cats.has('long-tieng'))) {
-      cats.add('tong-tai');
-      tags.push('Tổng Tài • Ngôn Tình');
+    if (slugSet.size <= 2) {
+      addGenre('kich-tinh', 'Kịch Tính');
+      addGenre('tong-tai', 'Tổng Tài');
     }
 
     return {
-      categories: Array.from(cats),
-      primaryGenre: tags.find(t => !t.includes('Lồng Tiếng')) || 'Ngôn Tình • Kịch Tính',
+      genreSlugs: Array.from(slugSet),
+      genreObjects: genreNames,
       isDubbed
     };
   }
 
-  enrichMovie(m) {
+  buildDefaultDescription(displayTitle, genreObjects, totalEps) {
+    const gNames = genreObjects.slice(0, 3).map(g => g.name).join(', ');
+    return `${displayTitle} là bộ phim ngắn đặc sắc thuộc thể loại ${gNames || 'Ngôn tình, Kịch tính'}. Trọn bộ ${totalEps} tập với cốt truyện gay cấn, nhịp phim nhanh, những cú xoay chuyển bất ngờ và cảm xúc sâu sắc.`;
+  }
+
+  enrichMovie(m, idx = 0) {
     const displayTitle = this.cleanMovieTitle(m.title);
-    const searchKey = `${m.title.toLowerCase()} ${displayTitle.toLowerCase()} ${this.removeAccents(displayTitle)}`;
-    const { categories, primaryGenre, isDubbed } = this.classifyMovie(m.title);
+    const slug = m.slug || this.makeSlug(displayTitle);
+    const normTitle = this.removeAccents(displayTitle).replace(/[^a-z0-9]+/g, ' ').trim();
+    const searchKey = `${String(m.title || '').toLowerCase()} ${displayTitle.toLowerCase()} ${normTitle} ${slug}`;
+    const { genreSlugs, genreObjects, isDubbed } = this.classifyMovie(m.title);
     const totalEps = (m.episodes && m.episodes.length) || m.total_episodes || 0;
-    const firstEpId = (m.episodes && m.episodes[0] && (m.episodes[0].id || m.episodes[0])) || '';
-    const fallbackPoster = firstEpId && !String(firstEpId).startsWith('e')
+
+    const h = this.hashCode(m.id || displayTitle);
+    const sourceBadge = m.source || SOURCE_BADGES[h % SOURCE_BADGES.length];
+    const viewCount = m.viewCount || (1200 + (h % 48000));
+    const rating = m.avgRating || (8.8 + ((h % 12) / 10)).toFixed(1);
+
+    const firstEp = (m.episodes && m.episodes[0]) ? m.episodes[0] : null;
+    const firstEpId = firstEp ? (firstEp.id || firstEp) : '';
+    const driveThumb = firstEpId && !String(firstEpId).startsWith('e')
       ? `https://drive.google.com/thumbnail?id=${firstEpId}&sz=w400`
       : '';
 
+    const catEntry = this.catalogMap[normTitle] || this.catalogMap[slug];
+    const tdPoster = (catEntry && catEntry.id)
+      ? `https://trumdrama.com/_next/image?url=%2Fapi%2Fv1%2Fimage%2F${catEntry.id}&w=384&q=75`
+      : '';
+
+    const posterUrl = m.poster_url || tdPoster || driveThumb || `./covers/${m.id}.jpg`;
+    const fallbackPoster = tdPoster || driveThumb || '';
+    const description = m.description || this.buildDefaultDescription(displayTitle, genreObjects, totalEps);
+
     return {
       ...m,
+      indexOrder: idx,
       displayTitle,
+      slug,
+      normTitle,
       searchKey,
-      categories,
-      primaryGenre,
+      genreSlugs,
+      genreObjects,
       isDubbed,
       total_episodes: totalEps,
-      fallbackPoster
+      sourceBadge,
+      viewCount,
+      rating,
+      poster_url: posterUrl,
+      fallbackPoster,
+      driveThumb,
+      description
     };
   }
 
-  formatEpisodeShort(index) {
-    const num = index + 1;
-    return `Tập ${num < 10 ? '0' + num : num}`;
+  formatViews(n) {
+    const num = Number(n) || 0;
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return String(num);
   }
 
   formatTime(sec) {
-    if (!sec || isNaN(sec) || !isFinite(sec)) return '00:00';
+    if (!sec || isNaN(sec) || !isFinite(sec)) return '0:00';
     const total = Math.max(0, Math.floor(sec));
     const m = Math.floor(total / 60);
     const s = total % 60;
-    return `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+    return `${m}:${s < 10 ? '0' + s : s}`;
+  }
+
+  formatTimeAgo(ts) {
+    if (!ts) return 'Vừa xem';
+    const diffSec = Math.max(1, Math.floor((Date.now() - ts) / 1000));
+    if (diffSec < 60) return 'Vừa xong';
+    if (diffSec < 3600) return `${Math.floor(diffSec / 60)} phút trước`;
+    if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} giờ trước`;
+    return `${Math.floor(diffSec / 86400)} ngày trước`;
   }
 
   /* ==================== STORAGE: HISTORY & FAVORITES ==================== */
@@ -184,10 +295,7 @@ class DramaPlayApp {
     let hist = {};
     try {
       const rawV2 = localStorage.getItem('dramaplay_history_v2');
-      if (rawV2) {
-        hist = JSON.parse(rawV2) || {};
-      }
-      // Migrate legacy single-movie history if present
+      if (rawV2) hist = JSON.parse(rawV2) || {};
       const legacy = localStorage.getItem('dramaplay_last_watch');
       if (legacy) {
         const old = JSON.parse(legacy);
@@ -210,7 +318,7 @@ class DramaPlayApp {
   saveWatchHistoryMap() {
     try {
       localStorage.setItem('dramaplay_history_v2', JSON.stringify(this.watchHistory));
-      this.updateBadges();
+      this.updateNavBadges();
     } catch (e) {}
   }
 
@@ -228,111 +336,163 @@ class DramaPlayApp {
   saveFavorites() {
     try {
       localStorage.setItem('dramaplay_favorites_v2', JSON.stringify(Array.from(this.favorites)));
-      this.updateBadges();
+      this.updateNavBadges();
     } catch (e) {}
   }
 
-  /* ==================== INITIALIZATION ==================== */
+  updateNavBadges() {
+    const favCnt = this.favorites.size;
+    const histCnt = Object.keys(this.watchHistory).length;
+    if (this.navFavBadge) {
+      this.navFavBadge.textContent = favCnt;
+      this.navFavBadge.style.display = favCnt > 0 ? 'inline-block' : 'none';
+    }
+    if (this.navHistBadge) {
+      this.navHistBadge.textContent = histCnt;
+      this.navHistBadge.style.display = histCnt > 0 ? 'inline-block' : 'none';
+    }
+  }
+
+  /* ==================== DOM INITIALIZATION ==================== */
 
   initElements() {
-    this.movieListEl = document.getElementById('movieGrid');
-    this.searchInput = document.getElementById('searchInput');
-    this.searchClearBtn = document.getElementById('searchClearBtn');
-    this.searchDropdown = document.getElementById('searchDropdown');
+    this.siteHeader = document.getElementById('siteHeader');
+    this.siteFooter = document.getElementById('siteFooter');
+    this.mobileMenu = document.getElementById('mobileMenu');
+    this.globalToast = document.getElementById('globalToast');
 
-    // Hero Elements
-    this.heroSection = document.getElementById('heroSection');
-    this.heroBackdrop = document.getElementById('heroBackdrop');
-    this.heroPoster = document.getElementById('heroPoster');
-    this.heroEpTag = document.getElementById('heroEpTag');
-    this.heroBadges = document.getElementById('heroBadges');
+    this.headerSearchInput = document.getElementById('headerSearchInput');
+    this.headerSearchDropdown = document.getElementById('headerSearchDropdown');
+    this.mobileSearchInput = document.getElementById('mobileSearchInput');
+    this.navFavBadge = document.getElementById('navFavBadge');
+    this.navHistBadge = document.getElementById('navHistBadge');
+
+    // Views
+    this.viewHome = document.getElementById('viewHome');
+    this.viewGenres = document.getElementById('viewGenres');
+    this.viewExplore = document.getElementById('viewExplore');
+    this.viewUserList = document.getElementById('viewUserList');
+    this.viewDetail = document.getElementById('viewDetail');
+    this.viewWatch = document.getElementById('viewWatch');
+
+    // Home elements
+    this.heroBannerBg = document.getElementById('heroBannerBg');
+    this.heroGenres = document.getElementById('heroGenres');
     this.heroTitle = document.getElementById('heroTitle');
     this.heroDesc = document.getElementById('heroDesc');
+    this.heroMeta = document.getElementById('heroMeta');
     this.heroPlayBtn = document.getElementById('heroPlayBtn');
-    this.heroFavBtn = document.getElementById('heroFavBtn');
+    this.heroPlayText = document.getElementById('heroPlayText');
+    this.heroDetailBtn = document.getElementById('heroDetailBtn');
+    this.heroCoverflowSlides = document.getElementById('heroCoverflowSlides');
     this.heroDots = document.getElementById('heroDots');
 
-    // Continue Watching & Catalog
-    this.continueSection = document.getElementById('continueSection');
-    this.continueCarousel = document.getElementById('continueCarousel');
-    this.catalogTitle = document.getElementById('catalogTitle');
-    this.movieCountBadge = document.getElementById('movieCountBadge');
-    this.lengthFilter = document.getElementById('lengthFilter');
-    this.sortSelect = document.getElementById('sortSelect');
-    this.historyCountBadge = document.getElementById('historyCountBadge');
-    this.favCountBadge = document.getElementById('favCountBadge');
-    this.loadMoreContainer = document.getElementById('loadMoreContainer');
-    this.btnLoadMore = document.getElementById('btnLoadMore');
+    this.homeContinueSection = document.getElementById('homeContinueSection');
+    this.homeContinueGrid = document.getElementById('homeContinueGrid');
+    this.homeTrendingGrid = document.getElementById('homeTrendingGrid');
+    this.homeGenresGrid = document.getElementById('homeGenresGrid');
+    this.homeNewestGrid = document.getElementById('homeNewestGrid');
+    this.homeBossGrid = document.getElementById('homeBossGrid');
+    this.homeRebirthGrid = document.getElementById('homeRebirthGrid');
+    this.homeDubbedSection = document.getElementById('homeDubbedSection');
+    this.homeDubbedGrid = document.getElementById('homeDubbedGrid');
+    this.vipBannerStatsText = document.getElementById('vipBannerStatsText');
 
-    if (this.loadMoreContainer && 'IntersectionObserver' in window) {
-      const obs = new IntersectionObserver((entries) => {
-        if (entries[0] && entries[0].isIntersecting) {
-          this.renderNextMovieBatch();
-        }
-      }, { rootMargin: '320px' });
-      obs.observe(this.loadMoreContainer);
-    }
+    // Genres & Explore elements
+    this.allGenresGrid = document.getElementById('allGenresGrid');
+    this.exploreSearchInput = document.getElementById('exploreSearchInput');
+    this.exploreGenreTags = document.getElementById('exploreGenreTags');
+    this.exploreResultsCount = document.getElementById('exploreResultsCount');
+    this.exploreCardsGrid = document.getElementById('exploreCardsGrid');
+    this.explorePagination = document.getElementById('explorePagination');
 
-    // Player Modal Elements
-    this.playerModal = document.getElementById('playerModal');
-    this.videoStage = document.getElementById('videoStage');
-    this.videoCanvas = document.getElementById('videoCanvas');
+    // User List elements
+    this.userListTitle = document.getElementById('userListTitle');
+    this.userListCount = document.getElementById('userListCount');
+    this.userListClearBtn = document.getElementById('userListClearBtn');
+    this.userListGrid = document.getElementById('userListGrid');
+
+    // Detail elements
+    this.detailBreadcrumbTitle = document.getElementById('detailBreadcrumbTitle');
+    this.detailCoverImg = document.getElementById('detailCoverImg');
+    this.detailTitle = document.getElementById('detailTitle');
+    this.detailCreator = document.getElementById('detailCreator');
+    this.detailTags = document.getElementById('detailTags');
+    this.detailDesc = document.getElementById('detailDesc');
+    this.detailPlayBtn = document.getElementById('detailPlayBtn');
+    this.detailPlayText = document.getElementById('detailPlayText');
+    this.detailFavBtn = document.getElementById('detailFavBtn');
+    this.detailFavText = document.getElementById('detailFavText');
+    this.detailEpCount = document.getElementById('detailEpCount');
+    this.detailEpisodesGrid = document.getElementById('detailEpisodesGrid');
+    this.detailRecommendedGrid = document.getElementById('detailRecommendedGrid');
+
+    // Watch / Player elements
+    this.epVideoArea = document.getElementById('epVideoArea');
+    this.vpContainer = document.getElementById('vpContainer');
     this.videoEl = document.getElementById('mainVideo');
     this.driveEmbed = document.getElementById('driveEmbed');
-    this.videoLoader = document.getElementById('videoLoader');
-    this.videoLoaderText = document.getElementById('videoLoaderText');
-    this.gestureToast = document.getElementById('gestureToast');
-    this.centerPlayBtn = document.getElementById('centerPlayBtn');
-    this.movieNameEl = document.getElementById('currentMovieName');
-    this.epNameEl = document.getElementById('currentEpName');
-    this.btnViewMode = document.getElementById('btnViewMode');
-    this.btnEpList = document.getElementById('btnEpList');
-    this.sideFavBtn = document.getElementById('sideFavBtn');
-    this.sideEpLabel = document.getElementById('sideEpLabel');
+    this.vpTouchLeft = document.getElementById('vpTouchLeft');
+    this.vpTouchRight = document.getElementById('vpTouchRight');
+    this.vpLoading = document.getElementById('vpLoading');
+    this.vpBigPlay = document.getElementById('vpBigPlay');
+    this.vpTitleText = document.getElementById('vpTitleText');
+    this.autoNextOverlay = document.getElementById('autoNextOverlay');
+    this.autoNextEpTitle = document.getElementById('autoNextEpTitle');
+    this.autoNextCountdown = document.getElementById('autoNextCountdown');
+    this.driveFallbackBar = document.getElementById('driveFallbackBar');
+    this.driveEpBtn = document.getElementById('driveEpBtn');
 
-    // Custom Controls
     this.timelineWrapper = document.getElementById('timelineWrapper');
     this.timelineBuffered = document.getElementById('timelineBuffered');
     this.timelineProgress = document.getElementById('timelineProgress');
-    this.btnPlayPause = document.getElementById('btnPlayPause');
-    this.btnMute = document.getElementById('btnMute');
+    this.svgPlayIcon = document.getElementById('svgPlayIcon');
+    this.svgVolIcon = document.getElementById('svgVolIcon');
     this.volumeSlider = document.getElementById('volumeSlider');
     this.currentTimeText = document.getElementById('currentTimeText');
     this.durationText = document.getElementById('durationText');
     this.btnAutoNextToggle = document.getElementById('btnAutoNextToggle');
     this.btnSpeed = document.getElementById('btnSpeed');
-    this.driveFallbackBar = document.getElementById('driveFallbackBar');
-    this.driveEpBtn = document.getElementById('driveEpBtn');
+    this.vpSpeedMenu = document.getElementById('vpSpeedMenu');
 
-    // Auto-Next Overlay
-    this.autoNextOverlay = document.getElementById('autoNextOverlay');
-    this.autoNextEpTitle = document.getElementById('autoNextEpTitle');
-    this.autoNextCountdown = document.getElementById('autoNextCountdown');
+    // Mobile & Sidebar watch info
+    this.mwFloatPosterImg = document.getElementById('mwFloatPosterImg');
+    this.mwFloatFavLabel = document.getElementById('mwFloatFavLabel');
+    this.mwInfoTitle = document.getElementById('mwInfoTitle');
 
-    // Theater Sidebar
-    this.sidebarPoster = document.getElementById('sidebarPoster');
-    this.sidebarMovieTitle = document.getElementById('sidebarMovieTitle');
-    this.sidebarTags = document.getElementById('sidebarTags');
-    this.sidebarProgressText = document.getElementById('sidebarProgressText');
-    this.sidebarFavBtn = document.getElementById('sidebarFavBtn');
-    this.sidebarEpTotal = document.getElementById('sidebarEpTotal');
-    this.epJumpInput = document.getElementById('epJumpInput');
-    this.sidebarRangeTabs = document.getElementById('sidebarRangeTabs');
-    this.sidebarEpGrid = document.getElementById('sidebarEpGrid');
-    this.relatedMoviesList = document.getElementById('relatedMoviesList');
+    this.epSheetPosterImg = document.getElementById('epSheetPosterImg');
+    this.epBreadcrumbMovie = document.getElementById('epBreadcrumbMovie');
+    this.epBreadcrumbEp = document.getElementById('epBreadcrumbEp');
+    this.epSidebarTitle = document.getElementById('epSidebarTitle');
+    this.epPrevBtn = document.getElementById('epPrevBtn');
+    this.epNextBtn = document.getElementById('epNextBtn');
+    this.epFavIcon = document.getElementById('epFavIcon');
+    this.epFavText = document.getElementById('epFavText');
+    this.epCurrentBadgeText = document.getElementById('epCurrentBadgeText');
+    this.epSidebarDesc = document.getElementById('epSidebarDesc');
+    this.epSidebarTags = document.getElementById('epSidebarTags');
+    this.epPageTabs = document.getElementById('epPageTabs');
+    this.epSidebarGrid = document.getElementById('epSidebarGrid');
 
-    // Mobile Drawer
-    this.drawerBackdrop = document.getElementById('drawerBackdrop');
-    this.epDrawer = document.getElementById('episodesDrawer');
-    this.drawerMovieTitle = document.getElementById('drawerMovieTitle');
-    this.drawerSubtitle = document.getElementById('drawerSubtitle');
-    this.drawerRangeTabs = document.getElementById('drawerRangeTabs');
-    this.episodesGrid = document.getElementById('episodesGrid');
+    // Mobile Sheet & Popups
+    this.mobileEpSheetBackdrop = document.getElementById('mobileEpSheetBackdrop');
+    this.mwSheetPoster = document.getElementById('mwSheetPoster');
+    this.mwSheetTitle = document.getElementById('mwSheetTitle');
+    this.mwSheetSub = document.getElementById('mwSheetSub');
+    this.mwSheetGenres = document.getElementById('mwSheetGenres');
+    this.mwSheetTabs = document.getElementById('mwSheetTabs');
+    this.mwSheetGrid = document.getElementById('mwSheetGrid');
 
-    // Settings Modal
-    this.settingsModal = document.getElementById('settingsModal');
-    this.scriptUrlInput = document.getElementById('scriptUrlInput');
+    this.sharePopupBackdrop = document.getElementById('sharePopupBackdrop');
+    this.sharePreviewCover = document.getElementById('sharePreviewCover');
+    this.sharePreviewTitle = document.getElementById('sharePreviewTitle');
+    this.sharePreviewMeta = document.getElementById('sharePreviewMeta');
+    this.shareUrlInput = document.getElementById('shareUrlInput');
+
+    this.settingsModalBackdrop = document.getElementById('settingsModalBackdrop');
+    this.settingsMovieCount = document.getElementById('settingsMovieCount');
     this.folderIdInput = document.getElementById('folderIdInput');
+    this.scriptUrlInput = document.getElementById('scriptUrlInput');
   }
 
   loadSettings() {
@@ -352,57 +512,74 @@ class DramaPlayApp {
   }
 
   saveSettings() {
-    this.scriptUrl = this.scriptUrlInput.value.trim();
-    this.folderId = this.folderIdInput.value.trim();
+    if (this.scriptUrlInput) this.scriptUrl = this.scriptUrlInput.value.trim();
+    if (this.folderIdInput) this.folderId = this.folderIdInput.value.trim();
     localStorage.setItem('dramaplay_script_url', this.scriptUrl);
     localStorage.setItem('dramaplay_folder_id', this.folderId);
     this.closeSettings();
+    this.showToast('🔄 Đang tải lại danh sách kho phim...');
     this.fetchData(true);
   }
 
-  /* ==================== EVENTS & GESTURES ==================== */
+  /* ==================== EVENTS & ROUTING ==================== */
 
   initEvents() {
-    // Search input & live dropdown
-    this.searchInput.addEventListener('input', () => {
-      const val = this.searchInput.value;
-      if (this.searchClearBtn) {
-        this.searchClearBtn.style.display = val.length > 0 ? 'flex' : 'none';
+    // Header scroll glass transition
+    window.addEventListener('scroll', () => {
+      if (!this.siteHeader) return;
+      if (window.scrollY > 24) {
+        this.siteHeader.classList.remove('hdr-transparent');
+        this.siteHeader.classList.add('hdr-scrolled');
+      } else {
+        this.siteHeader.classList.add('hdr-transparent');
+        this.siteHeader.classList.remove('hdr-scrolled');
       }
-      this.renderSearchDropdown(val);
-      this.applyFilters();
-    });
+    }, { passive: true });
 
-    this.searchInput.addEventListener('focus', () => {
-      if (this.searchInput.value.trim().length > 0) {
-        this.renderSearchDropdown(this.searchInput.value);
-      }
-    });
+    // Instant Search Dropdown in Header
+    if (this.headerSearchInput) {
+      this.headerSearchInput.addEventListener('input', () => {
+        this.renderHeaderSearchDropdown(this.headerSearchInput.value);
+      });
+      this.headerSearchInput.addEventListener('focus', () => {
+        if (this.headerSearchInput.value.trim()) {
+          this.renderHeaderSearchDropdown(this.headerSearchInput.value);
+        }
+      });
+    }
 
+    // Explore page live search input
+    if (this.exploreSearchInput) {
+      this.exploreSearchInput.addEventListener('input', () => {
+        this.exploreQuery = this.exploreSearchInput.value.trim();
+        this.applyExploreFilters(1);
+      });
+    }
+
+    // Close popups on outside click
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#searchWrapper')) {
-        this.searchDropdown.classList.remove('active');
+      if (!e.target.closest('#headerSearchForm') && this.headerSearchDropdown) {
+        this.headerSearchDropdown.classList.remove('active');
+      }
+      if (!e.target.closest('.vp-speed-wrap') && this.vpSpeedMenu) {
+        this.vpSpeedMenu.style.display = 'none';
       }
     });
 
-    // Browser back button closes player cleanly
-    window.addEventListener('popstate', () => {
-      if (this.playerModal.classList.contains('active') && !location.hash.startsWith('#watch')) {
-        this.closePlayer(true);
-      }
-    });
+    // Hash routing
+    window.addEventListener('hashchange', () => this.handleRouteFromHash());
 
-    // Global Keyboard Shortcuts
+    // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
         if (e.key === 'Escape') e.target.blur();
         return;
       }
 
-      if (!this.playerModal.classList.contains('active')) {
+      if (this.currentView !== 'watch') {
         if (e.key === '/') {
           e.preventDefault();
-          this.searchInput.focus();
+          if (this.headerSearchInput) this.headerSearchInput.focus();
         }
         return;
       }
@@ -418,29 +595,21 @@ class DramaPlayApp {
         case 'l':
         case 'L':
           e.preventDefault();
-          this.seekRelative(5);
+          this.seekRelative(10);
           break;
         case 'ArrowLeft':
         case 'j':
         case 'J':
           e.preventDefault();
-          this.seekRelative(-5);
+          this.seekRelative(-10);
           break;
         case 'ArrowUp':
           e.preventDefault();
-          if (this.isVerticalMode) {
-            this.prevEpisode();
-          } else {
-            this.setVolume(Math.min(1, (this.videoEl.volume || 0) + 0.1));
-          }
+          this.prevEpisode();
           break;
         case 'ArrowDown':
           e.preventDefault();
-          if (this.isVerticalMode) {
-            this.nextEpisode();
-          } else {
-            this.setVolume(Math.max(0, (this.videoEl.volume || 0) - 0.1));
-          }
+          this.nextEpisode();
           break;
         case 'n':
         case 'N':
@@ -463,74 +632,54 @@ class DramaPlayApp {
           this.toggleMute();
           break;
         case 'Escape':
-          if (this.epDrawer.classList.contains('active')) {
-            this.closeEpisodesDrawer();
+          if (this.mobileEpSheetBackdrop && this.mobileEpSheetBackdrop.style.display !== 'none') {
+            this.closeMobileEpSheet();
           } else {
-            this.closePlayer();
+            this.backFromWatch();
           }
           break;
       }
     });
 
-    // Video Element Events
+    this.initPlayerEvents();
+  }
+
+  initPlayerEvents() {
+    if (!this.videoEl) return;
+
     this.videoEl.addEventListener('loadstart', () => {
-      if (!this.isDriveMode) this.showLoader('Đang kết nối luồng phim...');
+      if (!this.isDriveMode) this.showLoader();
     });
-
     this.videoEl.addEventListener('waiting', () => {
-      if (!this.isDriveMode) this.showLoader('Đang tải đệm...');
+      if (!this.isDriveMode) this.showLoader();
     });
-
+    this.videoEl.addEventListener('canplay', () => this.hideLoader());
     this.videoEl.addEventListener('playing', () => {
       this.hideLoader();
-      if (this.centerPlayBtn) this.centerPlayBtn.style.display = 'none';
-      if (this.btnPlayPause) this.btnPlayPause.textContent = '⏸';
+      this.updatePlayPauseIcons(false);
       this.scheduleControlsHide(2800);
     });
-
-    this.videoEl.addEventListener('canplay', () => {
-      this.hideLoader();
-    });
-
     this.videoEl.addEventListener('play', () => {
-      if (this.centerPlayBtn) this.centerPlayBtn.style.display = 'none';
-      if (this.btnPlayPause) this.btnPlayPause.textContent = '⏸';
+      this.updatePlayPauseIcons(false);
     });
-
     this.videoEl.addEventListener('pause', () => {
       if (!this.isDriveMode && !this.videoEl.ended) {
-        if (this.centerPlayBtn) this.centerPlayBtn.style.display = 'flex';
-        if (this.btnPlayPause) this.btnPlayPause.textContent = '▶';
+        this.updatePlayPauseIcons(true);
         this.showControls(false);
       }
     });
-
     this.videoEl.addEventListener('timeupdate', () => {
       this.updateTimelineUI();
       this.saveCurrentProgress();
     });
-
-    this.videoEl.addEventListener('loadedmetadata', () => {
-      this.updateTimelineUI();
-    });
-
-    this.videoEl.addEventListener('progress', () => {
-      this.updateBufferedUI();
-    });
-
+    this.videoEl.addEventListener('loadedmetadata', () => this.updateTimelineUI());
+    this.videoEl.addEventListener('progress', () => this.updateBufferedUI());
     this.videoEl.addEventListener('ended', () => this.handleVideoEnded());
-    this.videoEl.addEventListener('error', (e) => this.handleVideoError(e));
+    this.videoEl.addEventListener('error', () => this.handleVideoError());
 
-    if (this.centerPlayBtn) {
-      this.centerPlayBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.togglePlay();
-      });
-    }
-
-    // Timeline Scrubbing (Mouse + Touch)
+    // Timeline Scrubbing
     if (this.timelineWrapper) {
-      const scrubToEvent = (clientX) => {
+      const scrubToX = (clientX) => {
         if (!this.videoEl || !this.videoEl.duration) return;
         const rect = this.timelineWrapper.getBoundingClientRect();
         const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
@@ -540,392 +689,354 @@ class DramaPlayApp {
 
       this.timelineWrapper.addEventListener('mousedown', (e) => {
         this.isScrubbing = true;
-        scrubToEvent(e.clientX);
+        scrubToX(e.clientX);
       });
-
       window.addEventListener('mousemove', (e) => {
-        if (this.isScrubbing) scrubToEvent(e.clientX);
+        if (this.isScrubbing) scrubToX(e.clientX);
       });
-
       window.addEventListener('mouseup', () => {
         this.isScrubbing = false;
       });
-
       this.timelineWrapper.addEventListener('touchstart', (e) => {
         this.isScrubbing = true;
-        if (e.touches[0]) scrubToEvent(e.touches[0].clientX);
+        if (e.touches[0]) scrubToX(e.touches[0].clientX);
       }, { passive: true });
-
       this.timelineWrapper.addEventListener('touchmove', (e) => {
-        if (this.isScrubbing && e.touches[0]) scrubToEvent(e.touches[0].clientX);
+        if (this.isScrubbing && e.touches[0]) scrubToX(e.touches[0].clientX);
       }, { passive: true });
-
       this.timelineWrapper.addEventListener('touchend', () => {
         this.isScrubbing = false;
       }, { passive: true });
     }
 
-    // Video Canvas Click / Double-Tap / Long-Press 2x / Vertical Swipe
-    let lastTapTime = 0;
+    // Touch Zones (Single tap toggle play/controls, Double tap seek -10s/+10s, Hold 2x, Vertical Swipe next/prev ep)
+    const bindZone = (zoneEl, deltaSec) => {
+      if (!zoneEl) return;
+      let lastTap = 0;
+      let singleTapTimer = null;
 
-    this.videoEl.addEventListener('click', (e) => {
-      if (this.isLongPressSpeed) return;
-      const now = Date.now();
-      const diff = now - lastTapTime;
-
-      if (diff < 280 && diff > 0) {
-        // Double tap / double click -> Seek -10s / +10s
-        if (this.singleTapTimeout) clearTimeout(this.singleTapTimeout);
-        const rect = this.videoEl.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        if (clickX > rect.width / 2) {
-          this.seekRelative(10);
+      zoneEl.addEventListener('click', (e) => {
+        if (this.isLongPressSpeed || this.isDriveMode) return;
+        const now = Date.now();
+        if (now - lastTap < 280) {
+          if (singleTapTimer) clearTimeout(singleTapTimer);
+          this.seekRelative(deltaSec);
         } else {
-          this.seekRelative(-10);
+          if (singleTapTimer) clearTimeout(singleTapTimer);
+          singleTapTimer = setTimeout(() => {
+            this.togglePlay();
+            this.showControls(true);
+          }, 230);
         }
-      } else {
-        // Single tap / click -> Toggle Play/Pause!
-        if (this.singleTapTimeout) clearTimeout(this.singleTapTimeout);
-        this.singleTapTimeout = setTimeout(() => {
-          this.togglePlay();
-        }, 240);
-      }
-      lastTapTime = now;
-    });
+        lastTap = now;
+      });
+    };
 
-    // Touch Gestures on Video (Swipe Up/Down + Long Press 2.0x)
-    this.videoEl.addEventListener('touchstart', (e) => {
-      if (!e.changedTouches[0]) return;
-      this.touchStartY = e.changedTouches[0].screenY;
-      this.touchStartX = e.changedTouches[0].screenX;
-      this.isLongPressSpeed = false;
+    bindZone(this.vpTouchLeft, -10);
+    bindZone(this.vpTouchRight, 10);
 
-      if (this.longPressTimer) clearTimeout(this.longPressTimer);
-      this.longPressTimer = setTimeout(() => {
-        if (!this.videoEl.paused && !this.isDriveMode) {
-          this.isLongPressSpeed = true;
-          this.savedSpeedBeforeHold = this.videoEl.playbackRate;
-          this.videoEl.playbackRate = 2.0;
-          this.showToast('⚡ Đang giữ tua nhanh 2.0x', 15000);
-        }
-      }, 480);
-    }, { passive: true });
+    if (this.vpContainer) {
+      this.vpContainer.addEventListener('mousemove', () => {
+        this.showControls(true);
+      });
 
-    this.videoEl.addEventListener('touchmove', (e) => {
-      if (!e.changedTouches[0]) return;
-      const dy = Math.abs(e.changedTouches[0].screenY - this.touchStartY);
-      const dx = Math.abs(e.changedTouches[0].screenX - this.touchStartX);
-      if (dy > 18 || dx > 18) {
+      this.vpContainer.addEventListener('touchstart', (e) => {
+        if (!e.changedTouches[0]) return;
+        this.touchStartY = e.changedTouches[0].screenY;
+        this.touchStartX = e.changedTouches[0].screenX;
+        this.isLongPressSpeed = false;
+
         if (this.longPressTimer) clearTimeout(this.longPressTimer);
-      }
-    }, { passive: true });
-
-    this.videoEl.addEventListener('touchend', (e) => {
-      if (this.longPressTimer) clearTimeout(this.longPressTimer);
-
-      if (this.isLongPressSpeed) {
-        this.videoEl.playbackRate = this.savedSpeedBeforeHold || this.playbackSpeeds[this.speedIndex];
-        this.hideToast();
-        setTimeout(() => { this.isLongPressSpeed = false; }, 100);
-        return;
-      }
-
-      if (!e.changedTouches[0]) return;
-      const diffY = e.changedTouches[0].screenY - this.touchStartY;
-      const diffX = Math.abs(e.changedTouches[0].screenX - this.touchStartX);
-
-      // Vertical swipe to switch episode when in Vertical Mode (or large swipe)
-      if (Math.abs(diffY) > 75 && diffX < 65) {
-        if (diffY < -75) {
-          this.nextEpisode();
-        } else if (diffY > 75) {
-          this.prevEpisode();
-        }
-      }
-    }, { passive: true });
-
-    // Show controls on mouse move in Video Stage
-    this.videoStage.addEventListener('mousemove', () => {
-      this.showControls(true);
-    });
-  }
-
-  /* ==================== DATA LOADING & SYNC ==================== */
-
-  async fetchData(force = false) {
-    if (!force) {
-      try {
-        const res = await fetch(`./movies.json?t=${Date.now()}`);
-        if (res.ok) {
-          const sMovies = await res.json();
-          if (Array.isArray(sMovies) && sMovies.length > 0) {
-            this.setMoviesData(sMovies);
-            return;
+        this.longPressTimer = setTimeout(() => {
+          if (!this.videoEl.paused && !this.isDriveMode) {
+            this.isLongPressSpeed = true;
+            this.savedSpeedBeforeHold = this.videoEl.playbackRate;
+            this.videoEl.playbackRate = 2.0;
+            this.showToast('⚡ Đang giữ tua nhanh 2.0x', 15000);
           }
+        }, 480);
+      }, { passive: true });
+
+      this.vpContainer.addEventListener('touchmove', (e) => {
+        if (!e.changedTouches[0]) return;
+        const dy = Math.abs(e.changedTouches[0].screenY - this.touchStartY);
+        const dx = Math.abs(e.changedTouches[0].screenX - this.touchStartX);
+        if (dy > 18 || dx > 18) {
+          if (this.longPressTimer) clearTimeout(this.longPressTimer);
         }
-      } catch (e) {}
+      }, { passive: true });
 
-      const cached = localStorage.getItem('dramaplay_cached_movies');
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            this.setMoviesData(parsed);
-            return;
-          }
-        } catch (e) {}
-      }
-    }
-
-    if (this.scriptUrl && this.folderId) {
-      this.movieListEl.innerHTML = `
-        <div style="grid-column: 1/-1; text-align:center; padding: 60px 20px; color: var(--text-sub);">
-          <div class="spinner-ring" style="margin: 0 auto 14px;"></div>
-          <div style="font-weight: 600; color: #fff;">Đang đồng bộ danh sách phim từ Google Drive...</div>
-        </div>
-      `;
-      try {
-        const url = `${this.scriptUrl}?folderId=${encodeURIComponent(this.folderId)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if (data.success && Array.isArray(data.movies) && data.movies.length > 0) {
-          // Preserve local poster_url if already mapped
-          const enriched = data.movies.map(m => ({
-            ...m,
-            poster_url: m.poster_url || `./covers/${m.id}.jpg`
-          }));
-          localStorage.setItem('dramaplay_cached_movies', JSON.stringify(enriched));
-          this.setMoviesData(enriched);
+      this.vpContainer.addEventListener('touchend', (e) => {
+        if (this.longPressTimer) clearTimeout(this.longPressTimer);
+        if (this.isLongPressSpeed) {
+          this.videoEl.playbackRate = this.savedSpeedBeforeHold || this.currentSpeed;
+          this.hideToast();
+          setTimeout(() => { this.isLongPressSpeed = false; }, 100);
           return;
         }
-      } catch (err) {
-        console.error('Drive fetch error:', err);
+        if (!e.changedTouches[0]) return;
+        const diffY = e.changedTouches[0].screenY - this.touchStartY;
+        const diffX = Math.abs(e.changedTouches[0].screenX - this.touchStartX);
+        if (Math.abs(diffY) > 80 && diffX < 65) {
+          if (diffY < -80) this.nextEpisode();
+          else if (diffY > 80) this.prevEpisode();
+        }
+      }, { passive: true });
+    }
+  }
+
+  /* ==================== DATA FETCHING & CATALOG ENRICHMENT ==================== */
+
+  async fetchData(force = false) {
+    try {
+      const res = await fetch(`./movies.json?t=${force ? Date.now() : 'td1'}`);
+      if (res.ok) {
+        const rawList = await res.json();
+        if (Array.isArray(rawList) && rawList.length > 0) {
+          this.setMoviesData(rawList);
+          this.loadCatalogInBackground();
+          return;
+        }
       }
+    } catch (e) {
+      console.error('Error loading movies.json:', e);
     }
 
-    this.setMoviesData(DEMO_MOVIES);
+    // Fallback to Apps Script if movies.json is unavailable
+    if (this.scriptUrl && this.folderId) {
+      try {
+        const res = await fetch(`${this.scriptUrl}?folderId=${encodeURIComponent(this.folderId)}`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.movies)) {
+          this.setMoviesData(data.movies);
+          this.loadCatalogInBackground();
+        }
+      } catch (e) {}
+    }
+  }
+
+  async loadCatalogInBackground() {
+    try {
+      const res = await fetch('./trumdrama_catalog.json');
+      if (!res.ok) return;
+      const cat = await res.json();
+      if (cat && typeof cat === 'object') {
+        this.catalogMap = cat;
+        // Re-enrich movies with official TrumDrama poster fallbacks
+        this.movies = this.movies.map((m, idx) => {
+          const entry = this.catalogMap[m.normTitle] || this.catalogMap[m.slug];
+          if (entry && entry.id) {
+            const tdUrl = `https://trumdrama.com/_next/image?url=%2Fapi%2Fv1%2Fimage%2F${entry.id}&w=384&q=75`;
+            return {
+              ...m,
+              fallbackPoster: tdUrl
+            };
+          }
+          return m;
+        });
+        // Update visible images' fallback attribute if needed
+        if (this.currentView === 'home') {
+          this.renderHomeSections();
+        }
+      }
+    } catch (e) {}
   }
 
   setMoviesData(rawList) {
-    this.movies = rawList.map(m => this.enrichMovie(m));
-    this.initHeroSpotlight();
-    this.renderContinueWatching();
-    this.applyFilters();
-    this.checkUrlHash();
+    this.movies = rawList.map((m, idx) => this.enrichMovie(m, idx));
+
+    const totalEpsAll = this.movies.reduce((acc, m) => acc + (m.total_episodes || 0), 0);
+    if (this.vipBannerStatsText) {
+      this.vipBannerStatsText.textContent = `Mở khóa toàn bộ ${this.movies.length.toLocaleString('vi-VN')} bộ phim với hơn ${totalEpsAll.toLocaleString('vi-VN')} tập phim. Không quảng cáo, chất lượng Full HD mượt mà.`;
+    }
+    if (this.settingsMovieCount) {
+      this.settingsMovieCount.textContent = `Đã đồng bộ ${this.movies.length.toLocaleString('vi-VN')} bộ phim (${totalEpsAll.toLocaleString('vi-VN')} tập)`;
+    }
+
+    this.initHeroBanner();
+    this.renderHomeSections();
+    this.renderGenresPage();
+    this.renderExploreGenrePills();
+    this.handleRouteFromHash();
   }
 
-  /* ==================== HERO SPOTLIGHT CAROUSEL ==================== */
+  /* ==================== NAVIGATION & ROUTING ==================== */
 
-  initHeroSpotlight() {
-    if (!this.movies || this.movies.length === 0) return;
+  navigate(view, event = null) {
+    if (event) event.preventDefault();
+    if (this.mobileMenu) this.mobileMenu.style.display = 'none';
+    location.hash = `#${view}`;
+  }
 
-    // Pick 6 featured movies with posters and high episode counts
-    const sorted = [...this.movies].sort((a, b) => (b.total_episodes || 0) - (a.total_episodes || 0));
-    this.heroMovies = sorted.slice(0, Math.min(6, sorted.length));
-    this.heroIndex = 0;
+  openExploreWith(sort, genreSlug, event = null) {
+    if (event) event.preventDefault();
+    this.exploreSort = sort || 'popular';
+    this.exploreGenre = genreSlug || '';
+    this.explorePage = 1;
+    location.hash = `#explore?sort=${encodeURIComponent(this.exploreSort)}&genre=${encodeURIComponent(this.exploreGenre)}`;
+  }
 
-    this.renderHeroSlide();
+  openMovieDetail(movieId, event = null) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    location.hash = `#movie/${encodeURIComponent(movieId)}`;
+  }
 
-    if (this.heroTimer) clearInterval(this.heroTimer);
-    this.heroTimer = setInterval(() => {
-      if (!this.playerModal.classList.contains('active') && this.currentCategory === 'all') {
-        this.heroIndex = (this.heroIndex + 1) % this.heroMovies.length;
-        this.renderHeroSlide();
+  openCurrentMovieDetail(event = null) {
+    if (event) event.preventDefault();
+    if (this.currentMovie) {
+      this.openMovieDetail(this.currentMovie.id);
+    } else {
+      this.navigate('home');
+    }
+  }
+
+  openWatchEpisode(movieId, epIndex = 0, event = null) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    location.hash = `#watch/${encodeURIComponent(movieId)}/${epIndex}`;
+  }
+
+  backFromWatch(event = null) {
+    if (event) event.preventDefault();
+    if (this.currentMovie) {
+      this.openMovieDetail(this.currentMovie.id);
+    } else {
+      this.navigate('home');
+    }
+  }
+
+  handleRouteFromHash() {
+    const hash = location.hash || '#home';
+
+    // Stop active playback if leaving #watch
+    if (!hash.startsWith('#watch/') && this.currentView === 'watch') {
+      this.stopPlaybackCleanly();
+    }
+
+    if (hash.startsWith('#watch/')) {
+      const parts = hash.replace('#watch/', '').split('/');
+      const movieId = decodeURIComponent(parts[0] || '');
+      const epIdx = parseInt(parts[1] || '0', 10) || 0;
+      const found = this.movies.find(m => m.id === movieId || m.slug === movieId);
+      if (found) {
+        this.showActiveView('watch');
+        const hist = this.watchHistory[found.id];
+        const resumeSec = (hist && hist.epIndex === epIdx) ? (hist.time || 0) : 0;
+        this.startPlayMovie(found, epIdx, resumeSec);
+        return;
       }
-    }, 6500);
-  }
-
-  renderHeroSlide() {
-    const m = this.heroMovies[this.heroIndex];
-    if (!m) return;
-
-    const posterUrl = m.poster_url || '';
-    if (this.heroBackdrop) {
-      this.heroBackdrop.style.backgroundImage = posterUrl ? `url('${posterUrl}')` : 'none';
-    }
-    if (this.heroPoster) {
-      this.heroPoster.src = posterUrl;
-      this.heroPoster.alt = m.displayTitle;
-    }
-    if (this.heroEpTag) {
-      this.heroEpTag.textContent = `Full ${m.total_episodes} Tập`;
     }
 
-    const hist = this.watchHistory[m.id];
-    const isFav = this.favorites.has(m.id);
-
-    if (this.heroBadges) {
-      this.heroBadges.innerHTML = `
-        <span class="tag-hot">🔥 TOP #${this.heroIndex + 1} THỊNH HÀNH</span>
-        <span class="tag-genre">${m.primaryGenre}</span>
-        ${m.isDubbed ? `<span class="tag-genre" style="background: rgba(245,158,11,0.25); color:#fbbf24;">🎙️ Lồng Tiếng</span>` : `<span class="tag-genre">HD Vietsub</span>`}
-      `;
-    }
-
-    if (this.heroTitle) {
-      this.heroTitle.textContent = m.displayTitle;
-    }
-
-    if (this.heroDesc) {
-      this.heroDesc.textContent = `Trọn bộ ${m.total_episodes} tập • Thể loại: ${m.primaryGenre}. Phát trực tuyến tốc độ cao, tự động chuyển tập mượt mà và lưu lịch sử xem tự động.`;
-    }
-
-    if (this.heroPlayBtn) {
-      if (hist) {
-        this.heroPlayBtn.innerHTML = `<span>▶</span> Xem Tiếp Tập ${hist.epIndex + 1}`;
-        this.heroPlayBtn.onclick = () => this.startPlayMovie(m, hist.epIndex, hist.time || 0);
-      } else {
-        this.heroPlayBtn.innerHTML = `<span>▶</span> Xem Phim Ngay`;
-        this.heroPlayBtn.onclick = () => this.startPlayMovie(m, 0, 0);
+    if (hash.startsWith('#movie/')) {
+      const movieId = decodeURIComponent(hash.replace('#movie/', '').split('/')[0] || '');
+      const found = this.movies.find(m => m.id === movieId || m.slug === movieId);
+      if (found) {
+        this.showActiveView('detail');
+        this.renderMovieDetailPage(found);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
       }
     }
 
-    if (this.heroFavBtn) {
-      this.heroFavBtn.innerHTML = isFav ? `<span>❤️</span> Đã Lưu Tủ Phim` : `<span>🤍</span> Lưu Tủ Phim`;
-      this.heroFavBtn.onclick = () => {
-        this.toggleFavorite(m.id);
-        this.renderHeroSlide();
-      };
-    }
-
-    if (this.heroDots) {
-      this.heroDots.innerHTML = this.heroMovies.map((_, idx) =>
-        `<button class="hero-dot ${idx === this.heroIndex ? 'active' : ''}" onclick="appInstance.setHeroIndex(${idx})"></button>`
-      ).join('');
-    }
-  }
-
-  setHeroIndex(idx) {
-    this.heroIndex = idx;
-    this.renderHeroSlide();
-  }
-
-  playRandomMovie() {
-    if (!this.movies || this.movies.length === 0) return;
-    const rand = this.movies[Math.floor(Math.random() * this.movies.length)];
-    this.startPlayMovie(rand, 0, 0);
-  }
-
-  /* ==================== CONTINUE WATCHING CAROUSEL ==================== */
-
-  renderContinueWatching() {
-    const entries = Object.values(this.watchHistory)
-      .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-
-    if (entries.length === 0 || this.currentCategory !== 'all') {
-      this.continueSection.style.display = 'none';
+    if (hash.startsWith('#genres')) {
+      this.showActiveView('genres');
+      this.renderGenresPage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
-    const validCards = [];
-    for (const h of entries) {
-      const movie = this.movies.find(m => m.id === h.movieId || m.title === h.movieTitle);
-      if (!movie) continue;
-      validCards.push({ movie, h });
-    }
-
-    if (validCards.length === 0) {
-      this.continueSection.style.display = 'none';
-      return;
-    }
-
-    this.continueSection.style.display = 'block';
-    this.continueCarousel.innerHTML = '';
-
-    validCards.slice(0, 12).forEach(({ movie, h }) => {
-      const epNum = (h.epIndex || 0) + 1;
-      const total = movie.total_episodes || movie.episodes.length || 1;
-      const pct = Math.min(100, Math.max(5, Math.round((epNum / total) * 100)));
-
-      const card = document.createElement('div');
-      card.className = 'continue-card';
-      card.innerHTML = `
-        <img src="${movie.poster_url || ''}" class="continue-thumb" alt="${movie.displayTitle}" onerror="this.style.opacity='0.2'">
-        <div class="continue-info">
-          <div class="continue-title">${movie.displayTitle}</div>
-          <div class="continue-ep">▶ Tập ${epNum}/${total} • ${this.formatTime(h.time || 0)}</div>
-          <div class="continue-progress-bar">
-            <div class="continue-progress-fill" style="width: ${pct}%"></div>
-          </div>
-        </div>
-        <button class="continue-remove" title="Xóa khỏi lịch sử">✕</button>
-      `;
-
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.continue-remove')) {
-          e.stopPropagation();
-          this.removeHistoryItem(movie.id);
-          return;
+    if (hash.startsWith('#explore')) {
+      const qIndex = hash.indexOf('?');
+      if (qIndex !== -1) {
+        const params = new URLSearchParams(hash.slice(qIndex + 1));
+        if (params.has('sort')) this.exploreSort = params.get('sort') || 'popular';
+        if (params.has('genre')) this.exploreGenre = params.get('genre') || '';
+        if (params.has('q')) {
+          this.exploreQuery = params.get('q') || '';
+          if (this.exploreSearchInput) this.exploreSearchInput.value = this.exploreQuery;
         }
-        this.startPlayMovie(movie, h.epIndex || 0, h.time || 0);
-      });
-
-      this.continueCarousel.appendChild(card);
-    });
-  }
-
-  removeHistoryItem(movieId) {
-    delete this.watchHistory[movieId];
-    this.saveWatchHistoryMap();
-    this.renderContinueWatching();
-    this.applyFilters();
-  }
-
-  clearAllHistory() {
-    if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử đang xem?')) return;
-    this.watchHistory = {};
-    localStorage.removeItem('dramaplay_last_watch');
-    this.saveWatchHistoryMap();
-    this.renderContinueWatching();
-    this.applyFilters();
-  }
-
-  /* ==================== CATEGORIES, FILTERING & SEARCH ==================== */
-
-  navigateHome(e) {
-    if (e) e.preventDefault();
-    if (this.playerModal.classList.contains('active')) {
-      this.closePlayer();
+      }
+      this.showActiveView('explore');
+      this.applyExploreFilters(this.explorePage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
     }
-    this.clearSearch();
-    this.selectCategory('all');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (hash.startsWith('#favorites')) {
+      this.showActiveView('favorites');
+      this.renderUserListPage('favorites');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    if (hash.startsWith('#history')) {
+      this.showActiveView('history');
+      this.renderUserListPage('history');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // Default: Home
+    this.showActiveView('home');
+    this.renderHomeContinueWatching();
   }
 
-  selectCategory(cat) {
-    this.currentCategory = cat;
+  showActiveView(viewName) {
+    this.currentView = viewName;
 
-    // Update top nav, category pills, and mobile bottom nav active states
-    document.querySelectorAll('.nav-link').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.cat === cat);
-    });
-    document.querySelectorAll('.cat-pill').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.cat === cat);
-    });
-    document.querySelectorAll('.mob-nav-item').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.mob === cat);
-    });
+    const isWatch = (viewName === 'watch');
+    if (this.siteHeader) this.siteHeader.style.display = isWatch ? 'none' : '';
+    if (this.siteFooter) this.siteFooter.style.display = isWatch ? 'none' : '';
+    document.body.style.overflow = isWatch ? 'hidden' : '';
 
-    // Show Hero & Continue Watching only on 'all' when not searching
-    const meta = CATEGORY_META[cat] || CATEGORY_META['all'];
-    if (this.catalogTitle) this.catalogTitle.textContent = meta.title;
+    if (this.viewHome) this.viewHome.style.display = viewName === 'home' ? 'block' : 'none';
+    if (this.viewGenres) this.viewGenres.style.display = viewName === 'genres' ? 'block' : 'none';
+    if (this.viewExplore) this.viewExplore.style.display = viewName === 'explore' ? 'block' : 'none';
+    if (this.viewUserList) this.viewUserList.style.display = (viewName === 'favorites' || viewName === 'history') ? 'block' : 'none';
+    if (this.viewDetail) this.viewDetail.style.display = viewName === 'detail' ? 'block' : 'none';
+    if (this.viewWatch) this.viewWatch.style.display = isWatch ? 'flex' : 'none';
 
-    this.renderContinueWatching();
-    this.applyFilters();
+    // Update active state on header nav
+    document.querySelectorAll('#desktopNav a, #mobileMenu .hdr-mobile-link').forEach(a => {
+      a.classList.toggle('active', a.dataset.nav === viewName);
+    });
   }
 
-  clearSearch() {
-    this.searchInput.value = '';
-    if (this.searchClearBtn) this.searchClearBtn.style.display = 'none';
-    this.searchDropdown.classList.remove('active');
-    this.applyFilters();
+  toggleMobileMenu() {
+    if (!this.mobileMenu) return;
+    const isHidden = this.mobileMenu.style.display === 'none';
+    this.mobileMenu.style.display = isHidden ? 'block' : 'none';
   }
 
-  renderSearchDropdown(rawQuery) {
-    const q = rawQuery.trim().toLowerCase();
+  submitHeaderSearch(e) {
+    if (e) e.preventDefault();
+    const q = this.headerSearchInput ? this.headerSearchInput.value.trim() : '';
+    if (this.headerSearchDropdown) this.headerSearchDropdown.classList.remove('active');
+    this.exploreQuery = q;
+    if (this.exploreSearchInput) this.exploreSearchInput.value = q;
+    location.hash = `#explore?q=${encodeURIComponent(q)}`;
+  }
+
+  submitMobileSearch(e) {
+    if (e) e.preventDefault();
+    const q = this.mobileSearchInput ? this.mobileSearchInput.value.trim() : '';
+    if (this.mobileMenu) this.mobileMenu.style.display = 'none';
+    this.exploreQuery = q;
+    if (this.exploreSearchInput) this.exploreSearchInput.value = q;
+    location.hash = `#explore?q=${encodeURIComponent(q)}`;
+  }
+
+  renderHeaderSearchDropdown(rawQuery) {
+    if (!this.headerSearchDropdown) return;
+    const q = String(rawQuery || '').trim().toLowerCase();
     const qNoAcc = this.removeAccents(q);
     if (!q) {
-      this.searchDropdown.classList.remove('active');
+      this.headerSearchDropdown.classList.remove('active');
       return;
     }
 
@@ -934,309 +1045,722 @@ class DramaPlayApp {
     ).slice(0, 8);
 
     if (matches.length === 0) {
-      this.searchDropdown.innerHTML = `
-        <div style="padding: 14px; text-align: center; color: var(--text-sub); font-size: 0.84rem;">
+      this.headerSearchDropdown.innerHTML = `
+        <div style="padding:16px; text-align:center; color:rgba(255,255,255,0.5); font-size:13px;">
           Không tìm thấy phim khớp với "${rawQuery}"
         </div>
       `;
-      this.searchDropdown.classList.add('active');
+      this.headerSearchDropdown.classList.add('active');
       return;
     }
 
-    this.searchDropdown.innerHTML = '';
+    this.headerSearchDropdown.innerHTML = '';
     matches.forEach(m => {
-      const item = document.createElement('div');
-      item.className = 'search-item';
-      item.innerHTML = `
-        <img src="${m.poster_url || ''}" alt="${m.displayTitle}" onerror="this.style.opacity='0.2'">
-        <div class="search-item-info">
-          <div class="search-item-title">${m.displayTitle}</div>
-          <div class="search-item-meta">Full ${m.total_episodes} Tập • ${m.primaryGenre}</div>
+      const div = document.createElement('div');
+      div.className = 'td-search-item';
+      const gText = m.genreObjects.slice(0, 2).map(g => g.name).join(' · ');
+      div.innerHTML = `
+        <img src="${m.poster_url}" data-fb="${m.fallbackPoster || ''}" data-dt="${m.driveThumb || ''}" alt="${m.displayTitle}" onerror="appInstance.handleImgError(this)">
+        <div class="td-search-item-info">
+          <div class="td-search-item-title">${m.displayTitle}</div>
+          <div class="td-search-item-meta">${m.total_episodes} tập · ${gText}</div>
         </div>
       `;
-      item.addEventListener('click', () => {
-        this.searchDropdown.classList.remove('active');
-        const hist = this.watchHistory[m.id];
-        this.startPlayMovie(m, hist ? hist.epIndex : 0, hist ? hist.time : 0);
+      div.addEventListener('click', () => {
+        this.headerSearchDropdown.classList.remove('active');
+        this.openMovieDetail(m.id);
       });
-      this.searchDropdown.appendChild(item);
+      this.headerSearchDropdown.appendChild(div);
     });
-    this.searchDropdown.classList.add('active');
+    this.headerSearchDropdown.classList.add('active');
   }
 
-  applyFilters() {
-    const q = this.searchInput.value.trim().toLowerCase();
-    const qNoAcc = this.removeAccents(q);
-    const lengthVal = this.lengthFilter ? this.lengthFilter.value : 'all';
-    const sortVal = this.sortSelect ? this.sortSelect.value : 'default';
-
-    // Hide hero banner when user is searching or viewing a specific tab
-    if (this.heroSection) {
-      this.heroSection.style.display = (this.currentCategory === 'all' && !q) ? 'block' : 'none';
+  handleImgError(imgEl) {
+    if (!imgEl) return;
+    const fb = imgEl.getAttribute('data-fb');
+    const dt = imgEl.getAttribute('data-dt');
+    if (fb && imgEl.src !== fb && !imgEl.dataset.triedFb) {
+      imgEl.dataset.triedFb = '1';
+      imgEl.src = fb;
+      return;
     }
+    if (dt && imgEl.src !== dt && !imgEl.dataset.triedDt) {
+      imgEl.dataset.triedDt = '1';
+      imgEl.src = dt;
+      return;
+    }
+    imgEl.style.opacity = '0.15';
+  }
+
+  /* ==================== 3D COVERFLOW HERO BANNER ==================== */
+
+  initHeroBanner() {
+    if (!this.movies || this.movies.length === 0) return;
+
+    // Pick 5 top featured dramas
+    const candidates = [...this.movies]
+      .filter(m => m.total_episodes >= 35)
+      .sort((a, b) => b.viewCount - a.viewCount);
+
+    this.heroMovies = (candidates.length >= 5 ? candidates : this.movies).slice(0, 5);
+    this.heroIndex = 0;
+
+    this.renderHeroBanner();
+
+    if (this.heroTimer) clearInterval(this.heroTimer);
+    this.heroTimer = setInterval(() => {
+      if (this.currentView === 'home') {
+        this.nextHeroSlide();
+      }
+    }, 6000);
+  }
+
+  prevHeroSlide() {
+    if (!this.heroMovies.length) return;
+    this.heroIndex = (this.heroIndex - 1 + this.heroMovies.length) % this.heroMovies.length;
+    this.renderHeroBanner();
+  }
+
+  nextHeroSlide() {
+    if (!this.heroMovies.length) return;
+    this.heroIndex = (this.heroIndex + 1) % this.heroMovies.length;
+    this.renderHeroBanner();
+  }
+
+  setHeroSlide(idx) {
+    this.heroIndex = idx;
+    this.renderHeroBanner();
+  }
+
+  renderHeroBanner() {
+    if (!this.heroMovies || this.heroMovies.length === 0) return;
+    const m = this.heroMovies[this.heroIndex];
+    if (!m) return;
+
+    // 1. Background blurred images
+    if (this.heroBannerBg) {
+      this.heroBannerBg.innerHTML = this.heroMovies.map((hm, idx) => `
+        <img alt="" class="hero-banner-bg-img" data-fb="${hm.fallbackPoster || ''}" data-dt="${hm.driveThumb || ''}" onerror="appInstance.handleImgError(this)" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;opacity:${idx === this.heroIndex ? 1 : 0};transition:opacity 0.6s ease;" src="${hm.poster_url}"/>
+      `).join('');
+    }
+
+    // 2. Left Text Info
+    if (this.heroGenres) {
+      this.heroGenres.innerHTML = m.genreObjects.slice(0, 3).map(g =>
+        `<a href="#explore" class="hero-banner-genre" onclick="appInstance.openExploreWith('popular', '${g.slug}', event)">${g.name}</a>`
+      ).join('');
+    }
+    if (this.heroTitle) this.heroTitle.textContent = m.displayTitle;
+    if (this.heroDesc) this.heroDesc.textContent = m.description;
+    if (this.heroMeta) {
+      this.heroMeta.innerHTML = `<span>${m.total_episodes} tập</span> · <span>👁 ${this.formatViews(m.viewCount)} lượt xem</span>`;
+    }
+
+    const hist = this.watchHistory[m.id];
+    if (this.heroPlayBtn && this.heroPlayText) {
+      const targetEp = hist ? (hist.epIndex || 0) : 0;
+      this.heroPlayText.textContent = hist ? `Xem Tiếp Tập ${targetEp + 1}` : 'Xem Ngay';
+      this.heroPlayBtn.href = `#watch/${encodeURIComponent(m.id)}/${targetEp}`;
+      this.heroPlayBtn.onclick = (e) => this.openWatchEpisode(m.id, targetEp, e);
+    }
+    if (this.heroDetailBtn) {
+      this.heroDetailBtn.href = `#movie/${encodeURIComponent(m.id)}`;
+      this.heroDetailBtn.onclick = (e) => this.openMovieDetail(m.id, e);
+    }
+
+    // 3. Right 3D Coverflow 5-Slide Stack
+    if (this.heroCoverflowSlides) {
+      const total = this.heroMovies.length;
+      const getPosClass = (idx) => {
+        const diff = (idx - this.heroIndex + total) % total;
+        if (diff === 0) return 'hero-cf-center';
+        if (diff === 1) return 'hero-cf-next';
+        if (diff === 2) return 'hero-cf-far-next';
+        if (diff === total - 1) return 'hero-cf-prev';
+        return 'hero-cf-far-prev';
+      };
+
+      this.heroCoverflowSlides.innerHTML = this.heroMovies.map((hm, idx) => {
+        const posClass = getPosClass(idx);
+        return `
+          <div class="hero-cf-slide ${posClass}" onclick="${idx === this.heroIndex ? `appInstance.openMovieDetail('${hm.id}', event)` : `appInstance.setHeroSlide(${idx})`}">
+            <img alt="${hm.displayTitle}" width="280" height="373" class="hero-cf-img" src="${hm.poster_url}" data-fb="${hm.fallbackPoster || ''}" data-dt="${hm.driveThumb || ''}" onerror="appInstance.handleImgError(this)"/>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 4. Dots
+    if (this.heroDots) {
+      this.heroDots.innerHTML = this.heroMovies.map((_, idx) =>
+        `<button class="hero-dot ${idx === this.heroIndex ? 'active' : ''}" onclick="appInstance.setHeroSlide(${idx})" aria-label="Slide ${idx + 1}"></button>`
+      ).join('');
+    }
+  }
+
+  /* ==================== DRAMA CARD BUILDER (EXACT TRUMDRAMA) ==================== */
+
+  createDramaCardElement(m, idx = 0) {
+    const card = document.createElement('div');
+    card.className = 'drama-card animate-fade-in';
+    card.style.animationDelay = `${Math.min(idx * 25, 360)}ms`;
+
+    const hist = this.watchHistory[m.id];
+    const targetEp = hist ? (hist.epIndex || 0) : 0;
+    const playText = hist ? `Tiếp Tập ${targetEp + 1}` : 'Xem Ngay';
+    const tagsStr = m.genreObjects.slice(0, 3).map(g => g.name).join(' · ');
+
+    card.innerHTML = `
+      <a class="drama-card-image" href="#movie/${encodeURIComponent(m.id)}">
+        <img alt="${m.displayTitle}" loading="lazy" decoding="async" class="drama-card-img" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;" src="${m.poster_url}" data-fb="${m.fallbackPoster || ''}" data-dt="${m.driveThumb || ''}" onerror="appInstance.handleImgError(this)"/>
+        <div class="drama-card-blur-zone"></div>
+        <div class="drama-card-hover-gradient"></div>
+        <span class="drama-card-source-badge">${m.sourceBadge}</span>
+        ${m.isDubbed ? `<span class="drama-card-dub-badge">🎙️ Lồng Tiếng</span>` : ''}
+        <span class="drama-card-ep-badge">${m.total_episodes} tập</span>
+      </a>
+
+      <a class="drama-card-title-layout" href="#movie/${encodeURIComponent(m.id)}">
+        <p class="drama-card-title">${m.displayTitle}</p>
+      </a>
+
+      <div class="drama-card-overlay">
+        <div class="drama-card-overlay-content">
+          <a class="drama-card-overlay-title" href="#movie/${encodeURIComponent(m.id)}">${m.displayTitle}</a>
+          <div class="drama-card-overlay-tags">
+            <span>${tagsStr}</span>
+          </div>
+          <p class="drama-card-overlay-desc">${m.description}</p>
+          <div class="drama-card-overlay-meta">
+            <span>${m.total_episodes} tập · 👁 ${this.formatViews(m.viewCount)}</span>
+          </div>
+          <a class="drama-card-play-btn" href="#watch/${encodeURIComponent(m.id)}/${targetEp}">
+            ${SVG_PLAY_CARD}
+            <span class="drama-card-play-text">${playText}</span>
+          </a>
+        </div>
+      </div>
+    `;
+
+    // Clicking the "Xem Ngay" button jumps straight to episode player
+    const playBtn = card.querySelector('.drama-card-play-btn');
+    if (playBtn) {
+      playBtn.addEventListener('click', (e) => {
+        this.openWatchEpisode(m.id, targetEp, e);
+      });
+    }
+
+    // Clicking anywhere else on card opens the Movie Detail Page (/phim/<slug>)
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.drama-card-play-btn')) return;
+      this.openMovieDetail(m.id, e);
+    });
+
+    return card;
+  }
+
+  renderCardListIntoGrid(gridEl, list) {
+    if (!gridEl) return;
+    gridEl.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    list.forEach((m, i) => frag.appendChild(this.createDramaCardElement(m, i)));
+    gridEl.appendChild(frag);
+  }
+
+  /* ==================== HOMEPAGE SECTIONS ==================== */
+
+  renderHomeSections() {
+    this.renderHomeContinueWatching();
+
+    // 1. Phim Thịnh Hành (16 cards sorted by viewCount)
+    const trending = [...this.movies]
+      .sort((a, b) => b.viewCount - a.viewCount)
+      .slice(0, 16);
+    this.renderCardListIntoGrid(this.homeTrendingGrid, trending);
+
+    // 2. Thể Loại (8 cards on home)
+    if (this.homeGenresGrid) {
+      this.homeGenresGrid.innerHTML = TRUMDRAMA_GENRES.slice(0, 8).map(g => {
+        const cnt = this.movies.filter(m => m.genreSlugs.includes(g.slug)).length;
+        return `
+          <a class="home-genre-card" href="#explore" onclick="appInstance.openExploreWith('popular', '${g.slug}', event)">
+            <span class="home-genre-name">${g.name}</span>
+            <span class="home-genre-count">${cnt} phim →</span>
+          </a>
+        `;
+      }).join('');
+    }
+
+    // 3. Mới Cập Nhật (16 cards)
+    const newest = [...this.movies]
+      .slice(0, 16);
+    this.renderCardListIntoGrid(this.homeNewestGrid, newest);
+
+    // 4. Tổng Tài & Ngôn Tình (8 cards)
+    const bossList = this.movies
+      .filter(m => m.genreSlugs.includes('tong-tai') || m.genreSlugs.includes('cuoi-truoc-yeu-sau'))
+      .slice(0, 8);
+    this.renderCardListIntoGrid(this.homeBossGrid, bossList);
+
+    // 5. Trọng Sinh & Báo Thù (8 cards)
+    const rebirthList = this.movies
+      .filter(m => m.genreSlugs.includes('trung-sinh') || m.genreSlugs.includes('bao-thu') || m.genreSlugs.includes('va-mat-xau-xa'))
+      .slice(0, 8);
+    this.renderCardListIntoGrid(this.homeRebirthGrid, rebirthList);
+
+    // 6. Phim Lồng Tiếng (8 cards)
+    const dubbedList = this.movies
+      .filter(m => m.isDubbed)
+      .slice(0, 8);
+    if (this.homeDubbedSection) {
+      if (dubbedList.length > 0) {
+        this.homeDubbedSection.style.display = 'block';
+        this.renderCardListIntoGrid(this.homeDubbedGrid, dubbedList);
+      } else {
+        this.homeDubbedSection.style.display = 'none';
+      }
+    }
+  }
+
+  renderHomeContinueWatching() {
+    if (!this.homeContinueSection || !this.homeContinueGrid) return;
+    const entries = Object.values(this.watchHistory)
+      .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+    const valid = [];
+    for (const h of entries) {
+      const m = this.movies.find(mv => mv.id === h.movieId || mv.title === h.movieTitle);
+      if (m) valid.push({ m, h });
+    }
+
+    if (valid.length === 0) {
+      this.homeContinueSection.style.display = 'none';
+      return;
+    }
+
+    this.homeContinueSection.style.display = 'block';
+    this.homeContinueGrid.innerHTML = '';
+
+    valid.slice(0, 7).forEach(({ m, h }) => {
+      const epNum = (h.epIndex || 0) + 1;
+      const total = m.total_episodes || 1;
+      const pct = Math.min(100, Math.max(5, Math.round((epNum / total) * 100)));
+
+      const card = document.createElement('div');
+      card.className = 'user-list-card';
+      card.innerHTML = `
+        <a class="user-list-card-poster" href="#watch/${encodeURIComponent(m.id)}/${h.epIndex || 0}">
+          <img class="user-list-card-img" src="${m.poster_url}" data-fb="${m.fallbackPoster || ''}" data-dt="${m.driveThumb || ''}" alt="${m.displayTitle}" onerror="appInstance.handleImgError(this)"/>
+          <span class="user-list-card-ep">Tập ${epNum}/${total}</span>
+          <div class="history-progress-bar">
+            <div class="history-progress-fill" style="width:${pct}%"></div>
+          </div>
+        </a>
+        <div class="user-list-card-info">
+          <div style="flex:1;min-width:0;">
+            <a class="user-list-card-title" href="#movie/${encodeURIComponent(m.id)}">${m.displayTitle}</a>
+            <div class="history-time-ago">${this.formatTimeAgo(h.updatedAt)}</div>
+          </div>
+          <button class="user-list-remove-btn" title="Xóa khỏi lịch sử">✕</button>
+        </div>
+      `;
+
+      card.querySelector('.user-list-card-poster').addEventListener('click', (e) => {
+        this.openWatchEpisode(m.id, h.epIndex || 0, e);
+      });
+      card.querySelector('.user-list-card-title').addEventListener('click', (e) => {
+        this.openMovieDetail(m.id, e);
+      });
+      card.querySelector('.user-list-remove-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.removeHistoryItem(m.id);
+      });
+
+      this.homeContinueGrid.appendChild(card);
+    });
+  }
+
+  /* ==================== VIEW 2: GENRES PAGE (/the-loai) ==================== */
+
+  renderGenresPage() {
+    if (!this.allGenresGrid) return;
+    this.allGenresGrid.innerHTML = TRUMDRAMA_GENRES.map((g, idx) => {
+      const cnt = this.movies.filter(m => m.genreSlugs.includes(g.slug)).length;
+      return `
+        <a class="genre-card" style="animation-delay:${idx * 25}ms" href="#explore" onclick="appInstance.openExploreWith('popular', '${g.slug}', event)">
+          <h2 class="genre-card-name">${g.name}</h2>
+          <p class="genre-card-count">${cnt} bộ phim · Xem phim →</p>
+        </a>
+      `;
+    }).join('');
+  }
+
+  /* ==================== VIEW 3: EXPLORE / SEARCH PAGE (/tim-kiem) ==================== */
+
+  renderExploreGenrePills() {
+    if (!this.exploreGenreTags) return;
+    const allPill = `<a class="search-genre-tag ${!this.exploreGenre ? 'active' : ''}" data-genre="" href="#explore" onclick="appInstance.setExploreGenre('', event)">Tất cả</a>`;
+    const pills = TRUMDRAMA_GENRES.map(g =>
+      `<a class="search-genre-tag ${this.exploreGenre === g.slug ? 'active' : ''}" data-genre="${g.slug}" href="#explore" onclick="appInstance.setExploreGenre('${g.slug}', event)">${g.name}</a>`
+    ).join('');
+    this.exploreGenreTags.innerHTML = allPill + pills;
+  }
+
+  setExploreSort(sortVal, event = null) {
+    if (event) event.preventDefault();
+    this.exploreSort = sortVal;
+    this.applyExploreFilters(1);
+  }
+
+  setExploreGenre(genreSlug, event = null) {
+    if (event) event.preventDefault();
+    this.exploreGenre = genreSlug;
+    this.applyExploreFilters(1);
+  }
+
+  applyExploreFilters(page = 1) {
+    this.explorePage = Math.max(1, page);
+
+    // Sync active tabs
+    document.querySelectorAll('#exploreSortTabs .genre-sort-tab').forEach(el => {
+      el.classList.toggle('active', el.dataset.sort === this.exploreSort);
+    });
+    document.querySelectorAll('#exploreGenreTags .search-genre-tag').forEach(el => {
+      el.classList.toggle('active', (el.dataset.genre || '') === this.exploreGenre);
+    });
+
+    const q = (this.exploreSearchInput ? this.exploreSearchInput.value : this.exploreQuery).trim().toLowerCase();
+    const qNoAcc = this.removeAccents(q);
 
     let list = [...this.movies];
 
-    // 1. Category Filter
-    if (this.currentCategory === 'favorites') {
-      list = list.filter(m => this.favorites.has(m.id));
-    } else if (this.currentCategory === 'history') {
-      list = list.filter(m => Boolean(this.watchHistory[m.id]));
-    } else if (this.currentCategory !== 'all') {
-      list = list.filter(m => m.categories.includes(this.currentCategory));
+    if (this.exploreGenre) {
+      list = list.filter(m => m.genreSlugs.includes(this.exploreGenre));
     }
-
-    // 2. Search Query Filter (Supports Vietnamese with or without accents)
     if (q) {
       list = list.filter(m => m.searchKey.includes(q) || m.searchKey.includes(qNoAcc));
     }
 
-    // 3. Episode Count / Length Filter
-    if (lengthVal === 'short') {
-      list = list.filter(m => m.total_episodes < 45);
-    } else if (lengthVal === 'medium') {
-      list = list.filter(m => m.total_episodes >= 45 && m.total_episodes <= 75);
-    } else if (lengthVal === 'long') {
-      list = list.filter(m => m.total_episodes > 75);
-    }
-
-    // 4. Sorting
-    if (sortVal === 'name_asc') {
-      list.sort((a, b) => a.displayTitle.localeCompare(b.displayTitle, 'vi'));
-    } else if (sortVal === 'ep_desc') {
+    if (this.exploreSort === 'popular') {
+      list.sort((a, b) => b.viewCount - a.viewCount);
+    } else if (this.exploreSort === 'newest') {
+      list.sort((a, b) => a.indexOrder - b.indexOrder);
+    } else if (this.exploreSort === 'episodes') {
       list.sort((a, b) => b.total_episodes - a.total_episodes);
-    } else if (sortVal === 'ep_asc') {
-      list.sort((a, b) => a.total_episodes - b.total_episodes);
-    } else if (sortVal === 'recent' || this.currentCategory === 'history') {
-      list.sort((a, b) => {
-        const ta = this.watchHistory[a.id]?.updatedAt || 0;
-        const tb = this.watchHistory[b.id]?.updatedAt || 0;
-        return tb - ta;
-      });
+    } else if (this.exploreSort === 'rating') {
+      list.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
+    } else if (this.exploreSort === 'title') {
+      list.sort((a, b) => a.displayTitle.localeCompare(b.displayTitle, 'vi'));
     }
 
-    this.filteredMovies = list;
-    if (this.movieCountBadge) {
-      this.movieCountBadge.textContent = `${list.length} bộ phim`;
-    }
-    this.renderMovies(list);
-  }
+    const total = list.length;
+    const totalPages = Math.max(1, Math.ceil(total / this.explorePageSize));
+    if (this.explorePage > totalPages) this.explorePage = totalPages;
 
-  renderMovies(list) {
-    this.movieListEl.innerHTML = '';
-    this.renderedCount = 0;
-
-    if (!list || list.length === 0) {
-      if (this.loadMoreContainer) this.loadMoreContainer.style.display = 'none';
-      this.movieListEl.innerHTML = `
-        <div style="grid-column: 1/-1; text-align:center; padding: 56px 20px; background: var(--bg-elevated); border-radius: 14px; border: 1px solid var(--border);">
-          <div style="font-size: 2.4rem; margin-bottom: 10px;">🎬</div>
-          <div style="font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 6px;">Không tìm thấy bộ phim nào</div>
-          <div style="font-size: 0.85rem; color: var(--text-sub); margin-bottom: 16px;">Thử đổi từ khóa tìm kiếm hoặc chọn danh mục Tất cả phim.</div>
-          <button class="btn-hero-play" style="margin: 0 auto;" onclick="appInstance.navigateHome()">Xem Tất Cả Kho Phim</button>
-        </div>
-      `;
-      return;
+    const genreObj = TRUMDRAMA_GENRES.find(g => g.slug === this.exploreGenre);
+    const genreLabel = genreObj ? ` · Thể loại: ${genreObj.name}` : '';
+    if (this.exploreResultsCount) {
+      this.exploreResultsCount.textContent = `Tìm thấy ${total.toLocaleString('vi-VN')} bộ phim${genreLabel} (Trang ${this.explorePage}/${totalPages})`;
     }
 
-    this.renderNextMovieBatch();
-  }
-
-  renderNextMovieBatch() {
-    const list = this.filteredMovies || [];
-    if (this.renderedCount >= list.length) {
-      if (this.loadMoreContainer) this.loadMoreContainer.style.display = 'none';
-      return;
-    }
-
-    const batch = list.slice(this.renderedCount, this.renderedCount + this.gridPageSize);
-    this.renderedCount += batch.length;
-
-    const frag = document.createDocumentFragment();
-    batch.forEach(m => {
-      const card = document.createElement('div');
-      card.className = 'movie-card';
-
-      const isFav = this.favorites.has(m.id);
-      const hist = this.watchHistory[m.id];
-      const epWatchedPct = hist
-        ? Math.min(100, Math.max(6, Math.round(((hist.epIndex + 1) / (m.total_episodes || 1)) * 100)))
-        : 0;
-
-      const primarySrc = m.poster_url || m.fallbackPoster || '';
-      const fbSrc = (m.fallbackPoster && m.fallbackPoster !== primarySrc) ? m.fallbackPoster : '';
-      const posterHtml = primarySrc
-        ? `<img src="${primarySrc}" data-fb="${fbSrc}" class="movie-poster" alt="${m.displayTitle}" loading="lazy" onerror="if(this.dataset.fb && this.src!==this.dataset.fb){this.src=this.dataset.fb;}else{this.style.display='none'; this.nextElementSibling.style.display='flex';}">
-           <div class="movie-thumb-fallback" style="display:none;">🎬</div>`
-        : `<div class="movie-thumb-fallback">🎬</div>`;
-
-      card.innerHTML = `
-        <div class="movie-thumb">
-          ${posterHtml}
-          <span class="ep-badge">Full ${m.total_episodes} Tập</span>
-          ${m.isDubbed ? `<span class="audio-badge">🎙️ Lồng Tiếng</span>` : ''}
-          <button class="card-fav-btn" title="Lưu vào Tủ phim">${isFav ? '❤️' : '🤍'}</button>
-          <div class="card-hover-overlay">
-            <div class="hover-play-circle">▶</div>
+    if (total === 0) {
+      if (this.exploreCardsGrid) {
+        this.exploreCardsGrid.innerHTML = `
+          <div class="search-empty" style="grid-column:1/-1;">
+            <span>🎬</span>
+            <h3 class="search-empty-title">Không tìm thấy bộ phim nào</h3>
+            <p class="search-empty-sub">Thử đổi từ khóa hoặc chọn thể loại "Tất cả"</p>
           </div>
-          ${hist ? `
-            <div class="card-watch-bar">
-              <div class="card-watch-text">▶ Đang xem Tập ${hist.epIndex + 1}/${m.total_episodes}</div>
-              <div class="card-watch-track">
-                <div class="card-watch-fill" style="width: ${epWatchedPct}%"></div>
-              </div>
-            </div>
-          ` : ''}
-        </div>
-        <div class="movie-details">
-          <div class="movie-title" title="${m.displayTitle}">${m.displayTitle}</div>
-          <div class="movie-meta">
-            <span class="genre-chip">${m.primaryGenre.split('•')[0].trim()}</span>
-            <span>HD</span>
-          </div>
-        </div>
-      `;
-
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.card-fav-btn')) {
-          e.stopPropagation();
-          this.toggleFavorite(m.id);
-          const btn = card.querySelector('.card-fav-btn');
-          if (btn) btn.textContent = this.favorites.has(m.id) ? '❤️' : '🤍';
-          return;
-        }
-        const saved = this.watchHistory[m.id];
-        this.startPlayMovie(m, saved ? saved.epIndex : 0, saved ? saved.time : 0);
-      });
-
-      frag.appendChild(card);
-    });
-
-    this.movieListEl.appendChild(frag);
-
-    if (this.loadMoreContainer) {
-      if (this.renderedCount < list.length) {
-        this.loadMoreContainer.style.display = 'flex';
-        if (this.btnLoadMore) {
-          this.btnLoadMore.textContent = `⬇ Xem thêm phim (Đang hiện ${this.renderedCount} / ${list.length} bộ)`;
-        }
-      } else {
-        this.loadMoreContainer.style.display = 'none';
+        `;
       }
+      if (this.explorePagination) this.explorePagination.innerHTML = '';
+      return;
     }
+
+    const start = (this.explorePage - 1) * this.explorePageSize;
+    const pageItems = list.slice(start, start + this.explorePageSize);
+    this.renderCardListIntoGrid(this.exploreCardsGrid, pageItems);
+    this.renderExplorePagination(totalPages);
   }
 
-  toggleFavorite(movieId) {
-    if (this.favorites.has(movieId)) {
-      this.favorites.delete(movieId);
-      this.showToast('Đã xóa khỏi Tủ phim');
+  renderExplorePagination(totalPages) {
+    if (!this.explorePagination) return;
+    if (totalPages <= 1) {
+      this.explorePagination.innerHTML = '';
+      return;
+    }
+
+    let html = '';
+    if (this.explorePage > 1) {
+      html += `<a class="genre-page-btn" href="#explore" onclick="event.preventDefault(); appInstance.applyExploreFilters(${this.explorePage - 1}); window.scrollTo({top:0,behavior:'smooth'});">← Trước</a>`;
+    }
+
+    const startP = Math.max(1, this.explorePage - 3);
+    const endP = Math.min(totalPages, startP + 6);
+    for (let p = startP; p <= endP; p++) {
+      html += `<a class="genre-page-num ${p === this.explorePage ? 'active' : ''}" href="#explore" onclick="event.preventDefault(); appInstance.applyExploreFilters(${p}); window.scrollTo({top:0,behavior:'smooth'});">${p}</a>`;
+    }
+
+    if (this.explorePage < totalPages) {
+      html += `<a class="genre-page-btn" href="#explore" onclick="event.preventDefault(); appInstance.applyExploreFilters(${this.explorePage + 1}); window.scrollTo({top:0,behavior:'smooth'});">Tiếp →</a>`;
+    }
+
+    this.explorePagination.innerHTML = html;
+  }
+
+  /* ==================== VIEW 4: FAVORITES & HISTORY PAGE ==================== */
+
+  renderUserListPage(mode) {
+    if (!this.userListGrid) return;
+    const isFav = (mode === 'favorites');
+    if (this.userListTitle) {
+      this.userListTitle.textContent = isFav ? '❤️ Tủ Phim Yêu Thích' : '🕒 Lịch Sử Xem Phim';
+    }
+    if (this.userListClearBtn) {
+      this.userListClearBtn.style.display = (!isFav && Object.keys(this.watchHistory).length > 0) ? 'inline-block' : 'none';
+    }
+
+    let items = [];
+    if (isFav) {
+      items = this.movies.filter(m => this.favorites.has(m.id)).map(m => ({ m, h: this.watchHistory[m.id] }));
     } else {
-      this.favorites.add(movieId);
-      this.showToast('❤️ Đã lưu vào Tủ phim yêu thích');
-    }
-    this.saveFavorites();
-    if (this.currentCategory === 'favorites') {
-      this.applyFilters();
-    }
-  }
-
-  toggleCurrentMovieFavorite() {
-    if (!this.currentMovie) return;
-    this.toggleFavorite(this.currentMovie.id);
-    this.updatePlayerFavoriteUI();
-  }
-
-  updatePlayerFavoriteUI() {
-    if (!this.currentMovie) return;
-    const isFav = this.favorites.has(this.currentMovie.id);
-    if (this.sidebarFavBtn) {
-      this.sidebarFavBtn.innerHTML = isFav ? '❤️ Đã yêu thích' : '🤍 Yêu thích';
-    }
-    if (this.sideFavBtn) {
-      this.sideFavBtn.innerHTML = `
-        <span class="side-icon">${isFav ? '❤️' : '🤍'}</span>
-        <span class="side-label">${isFav ? 'Đã lưu' : 'Lưu phim'}</span>
-      `;
-    }
-  }
-
-  updateBadges() {
-    const histCount = Object.keys(this.watchHistory).length;
-    if (this.historyCountBadge) {
-      this.historyCountBadge.textContent = histCount;
-      this.historyCountBadge.style.display = histCount > 0 ? 'inline-block' : 'none';
-    }
-    const favCount = this.favorites.size;
-    if (this.favCountBadge) {
-      this.favCountBadge.textContent = favCount;
-      this.favCountBadge.style.display = favCount > 0 ? 'inline-block' : 'none';
-    }
-  }
-
-  /* ==================== PLAYER & STREAMING ENGINE ==================== */
-
-  checkUrlHash() {
-    if (location.hash.startsWith('#watch/')) {
-      const parts = location.hash.replace('#watch/', '').split('/');
-      const movieId = decodeURIComponent(parts[0] || '');
-      const epIdx = parseInt(parts[1] || '0', 10) || 0;
-      const found = this.movies.find(m => m.id === movieId);
-      if (found) {
-        const hist = this.watchHistory[found.id];
-        const resumeSec = (hist && hist.epIndex === epIdx) ? (hist.time || 0) : 0;
-        this.startPlayMovie(found, epIdx, resumeSec, true);
+      const sortedHist = Object.values(this.watchHistory).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      for (const h of sortedHist) {
+        const m = this.movies.find(mv => mv.id === h.movieId || mv.title === h.movieTitle);
+        if (m) items.push({ m, h });
       }
     }
+
+    if (this.userListCount) {
+      this.userListCount.textContent = `${items.length} bộ phim`;
+    }
+
+    if (items.length === 0) {
+      this.userListGrid.innerHTML = `
+        <div class="user-list-empty" style="grid-column:1/-1;">
+          <p>${isFav ? 'Bạn chưa lưu bộ phim nào vào danh sách yêu thích.' : 'Bạn chưa có lịch sử xem phim nào.'}</p>
+          <a class="user-list-empty-btn" href="#explore" onclick="appInstance.navigate('explore', event)">Khám Phá Kho Phim Ngay</a>
+        </div>
+      `;
+      return;
+    }
+
+    this.userListGrid.innerHTML = '';
+    items.forEach(({ m, h }) => {
+      const epNum = h ? (h.epIndex || 0) + 1 : 1;
+      const total = m.total_episodes || 1;
+      const pct = h ? Math.min(100, Math.max(5, Math.round((epNum / total) * 100))) : 0;
+
+      const card = document.createElement('div');
+      card.className = 'user-list-card';
+      card.innerHTML = `
+        <a class="user-list-card-poster" href="#movie/${encodeURIComponent(m.id)}">
+          <img class="user-list-card-img" src="${m.poster_url}" data-fb="${m.fallbackPoster || ''}" data-dt="${m.driveThumb || ''}" alt="${m.displayTitle}" onerror="appInstance.handleImgError(this)"/>
+          <span class="user-list-card-ep">${h ? `Đang xem Tập ${epNum}/${total}` : `${total} tập`}</span>
+          ${h ? `<div class="history-progress-bar"><div class="history-progress-fill" style="width:${pct}%"></div></div>` : ''}
+        </a>
+        <div class="user-list-card-info">
+          <div style="flex:1;min-width:0;">
+            <a class="user-list-card-title" href="#movie/${encodeURIComponent(m.id)}">${m.displayTitle}</a>
+            ${h ? `<div class="history-time-ago">${this.formatTimeAgo(h.updatedAt)}</div>` : ''}
+          </div>
+          <button class="user-list-remove-btn" title="Xóa">✕</button>
+        </div>
+      `;
+
+      card.querySelector('.user-list-card-poster').addEventListener('click', (e) => {
+        if (h) this.openWatchEpisode(m.id, h.epIndex || 0, e);
+        else this.openMovieDetail(m.id, e);
+      });
+      card.querySelector('.user-list-card-title').addEventListener('click', (e) => {
+        this.openMovieDetail(m.id, e);
+      });
+      card.querySelector('.user-list-remove-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isFav) {
+          this.toggleFavorite(m.id);
+          this.renderUserListPage('favorites');
+        } else {
+          this.removeHistoryItem(m.id);
+          this.renderUserListPage('history');
+        }
+      });
+
+      this.userListGrid.appendChild(card);
+    });
   }
 
-  startPlayMovie(movie, epIndex = 0, resumeTime = 0, fromHash = false) {
+  removeHistoryItem(movieId) {
+    delete this.watchHistory[movieId];
+    this.saveWatchHistoryMap();
+    this.renderHomeContinueWatching();
+  }
+
+  clearAllHistory() {
+    if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử xem phim?')) return;
+    this.watchHistory = {};
+    localStorage.removeItem('dramaplay_last_watch');
+    this.saveWatchHistoryMap();
+    this.renderHomeContinueWatching();
+    if (this.currentView === 'history') this.renderUserListPage('history');
+    this.showToast('🗑️ Đã xóa lịch sử xem phim');
+  }
+
+  /* ==================== VIEW 5: MOVIE DETAIL PAGE (/phim/<slug>) ==================== */
+
+  renderMovieDetailPage(m) {
+    this.detailMovie = m;
+    document.title = `${m.displayTitle} - TrumDrama`;
+
+    if (this.detailBreadcrumbTitle) this.detailBreadcrumbTitle.textContent = m.displayTitle;
+    if (this.detailCoverImg) {
+      this.detailCoverImg.src = m.poster_url;
+      this.detailCoverImg.setAttribute('data-fb', m.fallbackPoster || '');
+      this.detailCoverImg.setAttribute('data-dt', m.driveThumb || '');
+      this.detailCoverImg.onerror = () => this.handleImgError(this.detailCoverImg);
+      this.detailCoverImg.alt = m.displayTitle;
+    }
+    if (this.detailTitle) this.detailTitle.textContent = m.displayTitle;
+    if (this.detailCreator) {
+      this.detailCreator.innerHTML = `
+        <span>${m.total_episodes} tập</span>
+        <span>·</span>
+        <span>${this.formatViews(m.viewCount)} lượt xem</span>
+        <span>·</span>
+        <span>★ ${m.rating}</span>
+      `;
+    }
+    if (this.detailTags) {
+      this.detailTags.innerHTML = m.genreObjects.map(g =>
+        `<a class="detail-tag" href="#explore" onclick="appInstance.openExploreWith('popular', '${g.slug}', event)">${g.name}</a>`
+      ).join('');
+    }
+    if (this.detailDesc) this.detailDesc.textContent = m.description;
+
+    const hist = this.watchHistory[m.id];
+    const targetEp = hist ? (hist.epIndex || 0) : 0;
+    if (this.detailPlayBtn && this.detailPlayText) {
+      this.detailPlayText.textContent = hist ? `Xem Tiếp Tập ${targetEp + 1}` : 'Xem Ngay';
+      this.detailPlayBtn.href = `#watch/${encodeURIComponent(m.id)}/${targetEp}`;
+      this.detailPlayBtn.onclick = (e) => this.openWatchEpisode(m.id, targetEp, e);
+    }
+
+    this.updateDetailFavoriteUI();
+
+    // Render Full Episode Grid
+    const totalEps = (m.episodes && m.episodes.length) || 0;
+    if (this.detailEpCount) {
+      this.detailEpCount.textContent = `Tổng ${totalEps} tập`;
+    }
+    if (this.detailEpisodesGrid) {
+      const watchedSet = new Set(hist?.watchedEps || []);
+      this.detailEpisodesGrid.innerHTML = '';
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < totalEps; i++) {
+        const a = document.createElement('a');
+        const isCurrent = hist && hist.epIndex === i;
+        const isWatched = watchedSet.has(i);
+        a.className = `detail-episode-item ${isCurrent ? 'current' : (isWatched ? 'watched' : '')}`;
+        a.href = `#watch/${encodeURIComponent(m.id)}/${i}`;
+        a.innerHTML = `<span class="detail-episode-number">${i + 1}</span>`;
+        a.addEventListener('click', (e) => this.openWatchEpisode(m.id, i, e));
+        frag.appendChild(a);
+      }
+      this.detailEpisodesGrid.appendChild(frag);
+    }
+
+    // Render Recommended Dramas
+    if (this.detailRecommendedGrid) {
+      const primarySlug = m.genreSlugs[0] || 'tong-tai';
+      const related = this.movies
+        .filter(x => x.id !== m.id && x.genreSlugs.includes(primarySlug))
+        .slice(0, 8);
+      this.renderCardListIntoGrid(this.detailRecommendedGrid, related);
+    }
+  }
+
+  toggleDetailFavorite() {
+    if (!this.detailMovie) return;
+    this.toggleFavorite(this.detailMovie.id);
+    this.updateDetailFavoriteUI();
+  }
+
+  updateDetailFavoriteUI() {
+    if (!this.detailMovie || !this.detailFavBtn || !this.detailFavText) return;
+    const isFav = this.favorites.has(this.detailMovie.id);
+    this.detailFavBtn.classList.toggle('detail-stat-active', isFav);
+    this.detailFavText.textContent = isFav ? 'Đã yêu thích' : 'Yêu thích';
+  }
+
+  /* ==================== VIEW 6: EPISODE WATCH PAGE (.episode-page) ==================== */
+
+  startPlayMovie(movie, epIndex = 0, resumeTime = 0) {
     if (!movie || !movie.episodes || movie.episodes.length === 0) return;
     this.currentMovie = movie;
     this.currentEpIndex = Math.max(0, Math.min(epIndex, movie.episodes.length - 1));
     this.currentEpRangeIndex = Math.floor(this.currentEpIndex / this.epPageSize);
 
-    this.playerModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-
-    if (!fromHash) {
-      try {
-        history.pushState({ watch: true }, '', `#watch/${encodeURIComponent(movie.id)}/${this.currentEpIndex}`);
-      } catch (e) {}
-    }
-
+    document.title = `${movie.displayTitle} - Tập ${this.currentEpIndex + 1} | TrumDrama`;
     this.requestWakeLock();
-    this.renderTheaterSidebar();
+    this.renderWatchSidebarInfo();
     this.playCurrentEpisode(resumeTime);
+  }
+
+  renderWatchSidebarInfo() {
+    const m = this.currentMovie;
+    if (!m) return;
+
+    if (this.epSheetPosterImg) this.epSheetPosterImg.src = m.poster_url;
+    if (this.mwFloatPosterImg) this.mwFloatPosterImg.src = m.poster_url;
+    if (this.epBreadcrumbMovie) this.epBreadcrumbMovie.textContent = m.displayTitle;
+    if (this.epSidebarTitle) this.epSidebarTitle.textContent = m.displayTitle;
+    if (this.epSidebarDesc) this.epSidebarDesc.textContent = m.description;
+    if (this.epSidebarTags) {
+      this.epSidebarTags.innerHTML = m.genreObjects.map(g =>
+        `<a href="#explore" class="ep-tag" onclick="appInstance.openExploreWith('popular', '${g.slug}', event)">${g.name}</a>`
+      ).join('');
+    }
+    this.updatePlayerFavoriteUI();
   }
 
   playCurrentEpisode(startTime = 0) {
     if (!this.currentMovie || !this.currentMovie.episodes[this.currentEpIndex]) return;
 
     this.cancelAutoNext();
-    const ep = this.currentMovie.episodes[this.currentEpIndex];
-    const totalEps = this.currentMovie.episodes.length;
-    const epLabel = this.formatEpisodeShort(this.currentEpIndex);
+    const m = this.currentMovie;
+    const ep = m.episodes[this.currentEpIndex];
+    const epNum = this.currentEpIndex + 1;
+    const totalEps = m.episodes.length;
 
-    // Update Range Tab if episode jumped across range boundary
-    const targetRange = Math.floor(this.currentEpIndex / this.epPageSize);
-    if (targetRange !== this.currentEpRangeIndex) {
-      this.currentEpRangeIndex = targetRange;
+    // Update URL hash silently if switching episode inside watch view
+    const targetHash = `#watch/${encodeURIComponent(m.id)}/${this.currentEpIndex}`;
+    if (location.hash !== targetHash) {
+      try {
+        history.replaceState(null, '', targetHash);
+      } catch (e) {}
     }
 
-    // Update Titles & Badges
-    this.movieNameEl.textContent = this.currentMovie.displayTitle;
-    this.epNameEl.textContent = `${epLabel} / ${totalEps} Tập`;
-    if (this.btnEpList) this.btnEpList.innerHTML = `📑 ${epLabel}/${totalEps}`;
-    if (this.sideEpLabel) this.sideEpLabel.textContent = `${epLabel}`;
-    if (this.driveEpBtn) this.driveEpBtn.textContent = `📑 Chọn Tập (${this.currentEpIndex + 1}/${totalEps})`;
+    document.title = `${m.displayTitle} - Tập ${epNum} | TrumDrama`;
 
-    // Mark episode as watched in history immediately
+    // Sync range tab
+    this.currentEpRangeIndex = Math.floor(this.currentEpIndex / this.epPageSize);
+
+    // Update UI titles & badges
+    if (this.vpTitleText) this.vpTitleText.textContent = `${m.displayTitle} — Tập ${epNum}`;
+    if (this.mwInfoTitle) this.mwInfoTitle.textContent = `${m.displayTitle} - Tập ${epNum}`;
+    if (this.epBreadcrumbEp) this.epBreadcrumbEp.textContent = `Tập ${epNum}`;
+    if (this.epCurrentBadgeText) this.epCurrentBadgeText.textContent = `Đang xem: Tập ${epNum}`;
+    if (this.driveEpBtn) this.driveEpBtn.textContent = `📑 Chọn tập (${epNum}/${totalEps})`;
+
+    if (this.epPrevBtn) this.epPrevBtn.classList.toggle('ep-action-disabled', this.currentEpIndex <= 0);
+    if (this.epNextBtn) this.epNextBtn.classList.toggle('ep-action-disabled', this.currentEpIndex >= totalEps - 1);
+
     this.recordEpisodeWatched(this.currentEpIndex, startTime);
-    this.updateEpisodeGridsActiveState();
+    this.renderWatchEpisodesGrid();
 
-    // Determine effective server mode
+    // Determine effective server
     let activeSrv = this.serverMode;
-    if (activeSrv === 'stream' && !this.streamProxyAvailable && ep.id && !ep.id.startsWith('e')) {
+    if (activeSrv === 'stream' && !this.streamProxyAvailable && ep.id && !String(ep.id).startsWith('e')) {
       activeSrv = 'direct';
     }
     this.updateServerSwitcherUI(activeSrv);
@@ -1246,16 +1770,18 @@ class DramaPlayApp {
       return;
     }
 
-    // HTML5 Video Stream Mode ('stream' or 'direct')
+    // HTML5 Video Playback
     this.isDriveMode = false;
-    this.playerModal.classList.remove('drive-mode');
     if (this.driveFallbackBar) this.driveFallbackBar.style.display = 'none';
-    this.driveEmbed.style.display = 'none';
-    this.driveEmbed.src = '';
-    this.videoEl.style.display = 'block';
+    if (this.driveEmbed) {
+      this.driveEmbed.style.display = 'none';
+      this.driveEmbed.src = '';
+    }
+    if (this.videoEl) this.videoEl.style.display = 'block';
+    if (this.vpControls) this.vpControls.style.display = '';
 
     let srcUrl = '';
-    if (activeSrv === 'stream' && ep.id && !ep.id.startsWith('e')) {
+    if (activeSrv === 'stream' && ep.id && !String(ep.id).startsWith('e')) {
       srcUrl = `/stream/?id=${ep.id}`;
     } else {
       srcUrl = ep.stream_url || ep.download_url || (ep.id ? `https://lh3.googleusercontent.com/d/${ep.id}` : '');
@@ -1264,23 +1790,22 @@ class DramaPlayApp {
     this.triedDirectFallback = (activeSrv === 'direct');
     this.pendingStartTime = startTime;
 
-    this.showLoader(`Đang phát ${epLabel}...`);
+    this.showLoader();
     this.videoEl.src = srcUrl;
-    this.videoEl.playbackRate = this.playbackSpeeds[this.speedIndex];
+    this.videoEl.playbackRate = this.currentSpeed;
     this.videoEl.load();
 
-    const startPlayback = () => {
+    this.videoEl.onloadedmetadata = () => {
       if (this.pendingStartTime > 0 && this.videoEl.duration && this.pendingStartTime < this.videoEl.duration - 2) {
         this.videoEl.currentTime = this.pendingStartTime;
         this.pendingStartTime = 0;
       }
       this.videoEl.play().catch(() => {
         this.hideLoader();
-        if (this.centerPlayBtn) this.centerPlayBtn.style.display = 'flex';
+        this.updatePlayPauseIcons(true);
       });
     };
 
-    this.videoEl.onloadedmetadata = startPlayback;
     this.showControls(true);
   }
 
@@ -1289,10 +1814,8 @@ class DramaPlayApp {
     const ep = this.currentMovie.episodes[this.currentEpIndex];
     if (!ep) return;
 
-    // Step 1: If '/stream/?id=' failed (e.g. local server without proxy), remember and try Direct Google stream
     const directUrl = ep.stream_url || (ep.id ? `https://lh3.googleusercontent.com/d/${ep.id}` : '');
     if (!this.triedDirectFallback && directUrl) {
-      console.warn('Luồng /stream/ không phản hồi, tự động chuyển sang VIP 2 (Direct)...');
       this.streamProxyAvailable = false;
       this.triedDirectFallback = true;
       this.updateServerSwitcherUI('direct');
@@ -1302,44 +1825,149 @@ class DramaPlayApp {
       return;
     }
 
-    // Step 2: Fallback cleanly to Google Drive Preview Iframe
-    console.warn('Chuyển sang trình phát dự phòng Google Drive Embed...');
     this.activateDriveEmbed(ep);
   }
 
   activateDriveEmbed(ep) {
     this.hideLoader();
     this.isDriveMode = true;
-    this.playerModal.classList.add('drive-mode');
     this.updateServerSwitcherUI('embed');
 
-    this.videoEl.pause();
-    this.videoEl.removeAttribute('src');
-    this.videoEl.style.display = 'none';
-    if (this.centerPlayBtn) this.centerPlayBtn.style.display = 'none';
-
-    this.driveEmbed.style.display = 'block';
-    this.driveEmbed.src = ep.preview_url || `https://drive.google.com/file/d/${ep.id}/preview`;
+    if (this.videoEl) {
+      this.videoEl.pause();
+      this.videoEl.removeAttribute('src');
+      this.videoEl.style.display = 'none';
+    }
+    if (this.vpBigPlay) this.vpBigPlay.style.display = 'none';
+    if (this.driveEmbed) {
+      this.driveEmbed.style.display = 'block';
+      this.driveEmbed.src = ep.preview_url || `https://drive.google.com/file/d/${ep.id}/preview`;
+    }
     if (this.driveFallbackBar) this.driveFallbackBar.style.display = 'flex';
-    this.playerModal.classList.remove('controls-hidden');
   }
 
   switchServer(mode) {
     this.serverMode = mode;
     if (mode === 'stream') this.streamProxyAvailable = true;
     const curTime = (!this.isDriveMode && this.videoEl) ? Math.floor(this.videoEl.currentTime || 0) : 0;
-    const labelMap = { stream: '⚡ Server VIP 1', direct: '🌐 Server VIP 2', embed: '☁️ Google Drive' };
-    this.showToast(`Đang chuyển sang ${labelMap[mode] || mode}...`);
+    const labels = { stream: '⚡ VIP 1', direct: '🌐 VIP 2', embed: '☁️ Google Drive' };
+    this.showToast(`Đang chuyển luồng ${labels[mode] || mode}...`);
     this.playCurrentEpisode(curTime);
   }
 
   updateServerSwitcherUI(activeMode) {
-    document.querySelectorAll('.srv-btn').forEach(btn => {
+    document.querySelectorAll('.vp-srv-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.srv === activeMode);
     });
   }
 
-  /* ==================== VIDEO CONTROLS & TIMELINE ==================== */
+  stopPlaybackCleanly() {
+    this.cancelAutoNext();
+    if (this.controlsTimeout) clearTimeout(this.controlsTimeout);
+    this.hideLoader();
+    this.isDriveMode = false;
+    if (this.videoEl) {
+      this.videoEl.pause();
+      this.videoEl.removeAttribute('src');
+    }
+    if (this.driveEmbed) {
+      this.driveEmbed.src = '';
+      this.driveEmbed.style.display = 'none';
+    }
+    this.closeMobileEpSheet();
+    this.releaseWakeLock();
+  }
+
+  /* ==================== WATCH EPISODE GRIDS & MOBILE SHEET ==================== */
+
+  renderWatchEpisodesGrid() {
+    if (!this.currentMovie) return;
+    const total = this.currentMovie.episodes.length;
+    const numRanges = Math.ceil(total / this.epPageSize);
+    const watchedSet = new Set(this.watchHistory[this.currentMovie.id]?.watchedEps || []);
+
+    // Desktop sidebar range tabs
+    if (this.epPageTabs) {
+      if (numRanges <= 1) {
+        this.epPageTabs.innerHTML = '';
+      } else {
+        let tabsHtml = '';
+        for (let r = 0; r < numRanges; r++) {
+          const s = r * this.epPageSize + 1;
+          const e = Math.min(total, (r + 1) * this.epPageSize);
+          tabsHtml += `<span class="ep-page-tab ${r === this.currentEpRangeIndex ? 'active' : ''}" onclick="appInstance.setWatchEpRange(${r})">${s}-${e}</span>`;
+        }
+        this.epPageTabs.innerHTML = tabsHtml;
+      }
+    }
+
+    // Mobile sheet range tabs
+    if (this.mwSheetTabs) {
+      if (numRanges <= 1) {
+        this.mwSheetTabs.innerHTML = `<button class="mw-sheet-tab active">1-${total}</button>`;
+      } else {
+        let mTabs = '';
+        for (let r = 0; r < numRanges; r++) {
+          const s = r * this.epPageSize + 1;
+          const e = Math.min(total, (r + 1) * this.epPageSize);
+          mTabs += `<button class="mw-sheet-tab ${r === this.currentEpRangeIndex ? 'active' : ''}" onclick="appInstance.setWatchEpRange(${r})">${s}-${e}</button>`;
+        }
+        this.mwSheetTabs.innerHTML = mTabs;
+      }
+    }
+
+    const startIdx = this.currentEpRangeIndex * this.epPageSize;
+    const endIdx = Math.min(total, startIdx + this.epPageSize);
+
+    const populateGrid = (gridEl, itemClass, closeSheetOnClick) => {
+      if (!gridEl) return;
+      gridEl.innerHTML = '';
+      const frag = document.createDocumentFragment();
+      for (let idx = startIdx; idx < endIdx; idx++) {
+        const a = document.createElement('a');
+        const isCurrent = idx === this.currentEpIndex;
+        const isWatched = watchedSet.has(idx);
+        a.className = `${itemClass} ${isCurrent ? 'current' : (isWatched ? 'watched' : '')}`;
+        a.href = `#watch/${encodeURIComponent(this.currentMovie.id)}/${idx}`;
+        a.textContent = idx + 1;
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.currentEpIndex = idx;
+          this.playCurrentEpisode(0);
+          if (closeSheetOnClick) this.closeMobileEpSheet();
+        });
+        frag.appendChild(a);
+      }
+      gridEl.appendChild(frag);
+    };
+
+    populateGrid(this.epSidebarGrid, 'ep-episode-item', false);
+    populateGrid(this.mwSheetGrid, 'mw-sheet-ep', true);
+  }
+
+  setWatchEpRange(r) {
+    this.currentEpRangeIndex = r;
+    this.renderWatchEpisodesGrid();
+  }
+
+  openMobileEpSheet() {
+    if (!this.currentMovie || !this.mobileEpSheetBackdrop) return;
+    const m = this.currentMovie;
+    if (this.mwSheetPoster) this.mwSheetPoster.src = m.poster_url;
+    if (this.mwSheetTitle) this.mwSheetTitle.textContent = m.displayTitle;
+    if (this.mwSheetSub) this.mwSheetSub.textContent = `Tổng ${m.episodes.length} tập • Đang phát Tập ${this.currentEpIndex + 1}`;
+    if (this.mwSheetGenres) {
+      this.mwSheetGenres.innerHTML = m.genreObjects.slice(0, 3).map(g => `<span>${g.name}</span>`).join('');
+    }
+    this.renderWatchEpisodesGrid();
+    this.mobileEpSheetBackdrop.style.display = 'flex';
+  }
+
+  closeMobileEpSheet() {
+    if (this.mobileEpSheetBackdrop) this.mobileEpSheetBackdrop.style.display = 'none';
+  }
+
+  /* ==================== VIDEO CONTROLS & AUTO-NEXT ==================== */
 
   togglePlay() {
     if (this.isDriveMode || !this.videoEl) return;
@@ -1347,6 +1975,17 @@ class DramaPlayApp {
       this.videoEl.play().catch(() => {});
     } else {
       this.videoEl.pause();
+    }
+  }
+
+  updatePlayPauseIcons(isPaused) {
+    if (this.vpBigPlay) {
+      this.vpBigPlay.style.display = (!this.isDriveMode && isPaused) ? 'flex' : 'none';
+    }
+    if (this.svgPlayIcon) {
+      this.svgPlayIcon.innerHTML = isPaused
+        ? `<path d="M8 5v14l11-7z"></path>`
+        : `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>`;
     }
   }
 
@@ -1363,25 +2002,44 @@ class DramaPlayApp {
     this.videoEl.volume = v;
     this.videoEl.muted = (v === 0);
     if (this.volumeSlider) this.volumeSlider.value = v;
-    if (this.btnMute) this.btnMute.textContent = (v === 0) ? '🔇' : (v < 0.5 ? '🔉' : '🔊');
+    this.updateVolumeIcon();
     localStorage.setItem('dramaplay_volume', String(v));
   }
 
   toggleMute() {
     if (!this.videoEl) return;
     this.videoEl.muted = !this.videoEl.muted;
-    if (this.btnMute) {
-      this.btnMute.textContent = this.videoEl.muted ? '🔇' : '🔊';
-    }
+    this.updateVolumeIcon();
     this.showToast(this.videoEl.muted ? '🔇 Đã tắt tiếng' : '🔊 Đã bật tiếng', 900);
   }
 
-  cyclePlaybackSpeed() {
-    this.speedIndex = (this.speedIndex + 1) % this.playbackSpeeds.length;
-    const speed = this.playbackSpeeds[this.speedIndex];
-    if (this.videoEl) this.videoEl.playbackRate = speed;
-    if (this.btnSpeed) this.btnSpeed.textContent = `${speed}x`;
-    this.showToast(`⚡ Tốc độ phát: ${speed}x`, 1000);
+  updateVolumeIcon() {
+    if (!this.svgVolIcon || !this.videoEl) return;
+    if (this.videoEl.muted || this.videoEl.volume === 0) {
+      this.svgVolIcon.innerHTML = `<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"></path>`;
+    } else {
+      this.svgVolIcon.innerHTML = `<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path>`;
+    }
+  }
+
+  toggleSpeedMenu(e) {
+    if (e) e.stopPropagation();
+    if (!this.vpSpeedMenu) return;
+    const isHidden = this.vpSpeedMenu.style.display === 'none';
+    this.vpSpeedMenu.style.display = isHidden ? 'flex' : 'none';
+  }
+
+  setPlaybackSpeed(spd) {
+    this.currentSpeed = spd;
+    if (this.videoEl) this.videoEl.playbackRate = spd;
+    if (this.btnSpeed) this.btnSpeed.textContent = `${spd}x`;
+    if (this.vpSpeedMenu) {
+      this.vpSpeedMenu.querySelectorAll('.vp-speed-item').forEach(btn => {
+        btn.classList.toggle('active', parseFloat(btn.dataset.spd) === spd);
+      });
+      this.vpSpeedMenu.style.display = 'none';
+    }
+    this.showToast(`⚡ Tốc độ phát: ${spd}x`, 900);
   }
 
   toggleAutoNextSetting() {
@@ -1393,26 +2051,12 @@ class DramaPlayApp {
 
   updateAutoNextUI() {
     if (!this.btnAutoNextToggle) return;
-    this.btnAutoNextToggle.classList.toggle('active', this.autoNextEnabled);
-    this.btnAutoNextToggle.textContent = this.autoNextEnabled ? '🔄 Tự chuyển: BẬT' : '🔄 Tự chuyển: TẮT';
-  }
-
-  toggleViewMode() {
-    this.isVerticalMode = !this.isVerticalMode;
-    this.updateViewModeUI();
-    this.showToast(this.isVerticalMode ? '📱 Chế độ Vuốt Dọc Toàn Màn Hình' : '💻 Chế độ Rạp Phim (Hiện Danh Sách Tập)');
-  }
-
-  updateViewModeUI() {
-    if (!this.playerModal) return;
-    this.playerModal.classList.toggle('vertical-mode', this.isVerticalMode);
-    if (this.btnViewMode) {
-      this.btnViewMode.innerHTML = this.isVerticalMode ? '💻 Rạp Phim' : '📱 Chế độ Dọc';
-    }
+    this.btnAutoNextToggle.classList.toggle('vp-btn-active', this.autoNextEnabled);
+    this.btnAutoNextToggle.textContent = this.autoNextEnabled ? 'Auto: Bật' : 'Auto: Tắt';
   }
 
   toggleFullscreen() {
-    const target = this.videoStage || this.playerModal;
+    const target = this.epVideoWrapper || this.epVideoArea || document.documentElement;
     if (!document.fullscreenElement) {
       if (target.requestFullscreen) target.requestFullscreen().catch(() => {});
       else if (this.videoEl && this.videoEl.webkitEnterFullscreen) this.videoEl.webkitEnterFullscreen();
@@ -1442,49 +2086,30 @@ class DramaPlayApp {
     }
   }
 
-  showLoader(msg = 'Đang tải...') {
-    if (this.videoLoaderText) this.videoLoaderText.textContent = msg;
-    if (this.videoLoader) this.videoLoader.style.display = 'flex';
+  showLoader() {
+    if (this.vpLoading) this.vpLoading.style.display = 'flex';
   }
 
   hideLoader() {
-    if (this.videoLoader) this.videoLoader.style.display = 'none';
-  }
-
-  showToast(msg, duration = 1400) {
-    if (!this.gestureToast) return;
-    if (this.toastTimeout) clearTimeout(this.toastTimeout);
-    this.gestureToast.textContent = msg;
-    this.gestureToast.classList.add('active');
-    this.toastTimeout = setTimeout(() => {
-      this.gestureToast.classList.remove('active');
-    }, duration);
-  }
-
-  hideToast() {
-    if (!this.gestureToast) return;
-    if (this.toastTimeout) clearTimeout(this.toastTimeout);
-    this.gestureToast.classList.remove('active');
+    if (this.vpLoading) this.vpLoading.style.display = 'none';
   }
 
   scheduleControlsHide(delay = 2800) {
     if (this.controlsTimeout) clearTimeout(this.controlsTimeout);
     this.controlsTimeout = setTimeout(() => {
-      if (!this.isDriveMode && this.videoEl && !this.videoEl.paused) {
-        this.playerModal.classList.add('controls-hidden');
+      if (!this.isDriveMode && this.videoEl && !this.videoEl.paused && this.vpContainer) {
+        this.vpContainer.classList.remove('vp-show-controls');
       }
     }, delay);
   }
 
   showControls(autoHide = true) {
     if (this.controlsTimeout) clearTimeout(this.controlsTimeout);
-    this.playerModal.classList.remove('controls-hidden');
+    if (this.vpContainer) this.vpContainer.classList.add('vp-show-controls');
     if (autoHide && !this.isDriveMode && this.videoEl && !this.videoEl.paused) {
       this.scheduleControlsHide(2800);
     }
   }
-
-  /* ==================== EPISODE NAVIGATION & SIDEBAR ==================== */
 
   handleVideoEnded() {
     if (!this.currentMovie) return;
@@ -1493,21 +2118,20 @@ class DramaPlayApp {
         this.startAutoNextCountdown();
       }
     } else {
-      this.showToast('🎉 Bạn đã xem trọn bộ phim này!', 4000);
+      this.showToast('🎉 Bạn đã xem trọn bộ phim này!', 3500);
     }
   }
 
   startAutoNextCountdown() {
     let timeLeft = 2;
-    const nextEpLabel = this.formatEpisodeShort(this.currentEpIndex + 1);
-    if (this.autoNextEpTitle) this.autoNextEpTitle.textContent = nextEpLabel;
-    this.autoNextCountdown.textContent = timeLeft;
-    this.autoNextOverlay.classList.add('active');
+    if (this.autoNextEpTitle) this.autoNextEpTitle.textContent = `Tập ${this.currentEpIndex + 2}`;
+    if (this.autoNextCountdown) this.autoNextCountdown.textContent = timeLeft;
+    if (this.autoNextOverlay) this.autoNextOverlay.classList.add('active');
 
     if (this.autoNextTimer) clearInterval(this.autoNextTimer);
     this.autoNextTimer = setInterval(() => {
       timeLeft -= 1;
-      this.autoNextCountdown.textContent = timeLeft;
+      if (this.autoNextCountdown) this.autoNextCountdown.textContent = timeLeft;
       if (timeLeft <= 0) {
         this.cancelAutoNext();
         this.nextEpisode();
@@ -1528,7 +2152,7 @@ class DramaPlayApp {
     if (!this.currentMovie) return;
     if (this.currentEpIndex < this.currentMovie.episodes.length - 1) {
       this.currentEpIndex++;
-      this.showToast(`⏭ Chuyển sang ${this.formatEpisodeShort(this.currentEpIndex)}`);
+      this.showToast(`⏭ Tập ${this.currentEpIndex + 1}`);
       this.playCurrentEpisode(0);
     } else {
       this.showToast('🎉 Đây là tập cuối của bộ phim!');
@@ -1540,198 +2164,63 @@ class DramaPlayApp {
     if (!this.currentMovie) return;
     if (this.currentEpIndex > 0) {
       this.currentEpIndex--;
-      this.showToast(`⏮ Lùi về ${this.formatEpisodeShort(this.currentEpIndex)}`);
+      this.showToast(`⏮ Tập ${this.currentEpIndex + 1}`);
       this.playCurrentEpisode(0);
     } else {
-      this.showToast('Đang ở Tập 01');
+      this.showToast('Đang ở Tập 1');
     }
   }
 
-  jumpToEpisodeInput() {
-    if (!this.currentMovie || !this.epJumpInput) return;
-    const val = parseInt(this.epJumpInput.value, 10);
-    if (isNaN(val) || val < 1 || val > this.currentMovie.episodes.length) {
-      this.showToast(`Vui lòng nhập số tập từ 1 đến ${this.currentMovie.episodes.length}`);
-      return;
+  /* ==================== FAVORITES, SHARE & PROGRESS ==================== */
+
+  toggleFavorite(movieId) {
+    if (this.favorites.has(movieId)) {
+      this.favorites.delete(movieId);
+      this.showToast('Đã xóa khỏi Yêu thích');
+    } else {
+      this.favorites.add(movieId);
+      this.showToast('❤️ Đã thêm vào Yêu thích');
     }
-    this.epJumpInput.value = '';
-    this.currentEpIndex = val - 1;
-    this.playCurrentEpisode(0);
+    this.saveFavorites();
   }
 
-  renderTheaterSidebar() {
+  toggleCurrentMovieFavorite() {
     if (!this.currentMovie) return;
-    const m = this.currentMovie;
-
-    if (this.sidebarPoster) this.sidebarPoster.src = m.poster_url || '';
-    if (this.sidebarMovieTitle) this.sidebarMovieTitle.textContent = m.displayTitle;
-    if (this.sidebarEpTotal) this.sidebarEpTotal.textContent = `${m.episodes.length} tập`;
-    if (this.epJumpInput) this.epJumpInput.max = m.episodes.length;
-
-    if (this.sidebarTags) {
-      this.sidebarTags.innerHTML = `
-        <span class="genre-chip">${m.primaryGenre}</span>
-        ${m.isDubbed ? `<span class="genre-chip" style="color:#fbbf24;">🎙️ Lồng Tiếng</span>` : ''}
-      `;
-    }
-
+    this.toggleFavorite(this.currentMovie.id);
     this.updatePlayerFavoriteUI();
-    this.renderEpisodeRangeTabs();
-    this.renderEpisodesInContainer(this.sidebarEpGrid, false);
-    this.renderRelatedMovies();
   }
 
-  renderEpisodeRangeTabs() {
+  updatePlayerFavoriteUI() {
     if (!this.currentMovie) return;
-    const total = this.currentMovie.episodes.length;
-    const numRanges = Math.ceil(total / this.epPageSize);
-
-    const buildTabs = (container, isDrawer) => {
-      if (!container) return;
-      if (numRanges <= 1) {
-        container.style.display = 'none';
-        container.innerHTML = '';
-        return;
-      }
-      container.style.display = 'flex';
-      container.innerHTML = '';
-      for (let r = 0; r < numRanges; r++) {
-        const start = r * this.epPageSize + 1;
-        const end = Math.min(total, (r + 1) * this.epPageSize);
-        const btn = document.createElement('button');
-        btn.className = `range-tab ${r === this.currentEpRangeIndex ? 'active' : ''}`;
-        btn.textContent = `Tập ${start} - ${end}`;
-        btn.addEventListener('click', () => {
-          this.currentEpRangeIndex = r;
-          this.renderEpisodeRangeTabs();
-          this.renderEpisodesInContainer(this.sidebarEpGrid, false);
-          if (isDrawer || this.epDrawer.classList.contains('active')) {
-            this.renderEpisodesInContainer(this.episodesGrid, true);
-          }
-        });
-        container.appendChild(btn);
-      }
-    };
-
-    buildTabs(this.sidebarRangeTabs, false);
-    buildTabs(this.drawerRangeTabs, true);
+    const isFav = this.favorites.has(this.currentMovie.id);
+    if (this.epFavIcon) this.epFavIcon.textContent = isFav ? '❤️' : '🤍';
+    if (this.epFavText) this.epFavText.textContent = isFav ? 'Đã lưu' : 'Lưu';
+    if (this.mwFloatFavLabel) this.mwFloatFavLabel.textContent = isFav ? 'Đã thích' : 'Yêu thích';
   }
 
-  renderEpisodesInContainer(container, closeDrawerOnClick = false) {
-    if (!container || !this.currentMovie) return;
-    container.innerHTML = '';
-
-    const total = this.currentMovie.episodes.length;
-    const startIdx = this.currentEpRangeIndex * this.epPageSize;
-    const endIdx = Math.min(total, startIdx + this.epPageSize);
-
-    const watchedSet = new Set(this.watchHistory[this.currentMovie.id]?.watchedEps || []);
-
-    for (let idx = startIdx; idx < endIdx; idx++) {
-      const btn = document.createElement('div');
-      const isCurrent = idx === this.currentEpIndex;
-      const isWatched = watchedSet.has(idx);
-      btn.className = `ep-item ${isCurrent ? 'current' : (isWatched ? 'watched' : '')}`;
-      btn.dataset.epIndex = idx;
-      const num = idx + 1;
-      btn.textContent = isCurrent ? `▶ ${num}` : (num < 10 ? `0${num}` : `${num}`);
-
-      btn.addEventListener('click', () => {
-        this.currentEpIndex = idx;
-        this.playCurrentEpisode(0);
-        if (closeDrawerOnClick) this.closeEpisodesDrawer();
-      });
-
-      container.appendChild(btn);
-    }
+  openSharePopup() {
+    const m = (this.currentView === 'watch' ? this.currentMovie : this.detailMovie) || this.currentMovie || this.detailMovie;
+    if (!m || !this.sharePopupBackdrop) return;
+    if (this.sharePreviewCover) this.sharePreviewCover.src = m.poster_url;
+    if (this.sharePreviewTitle) this.sharePreviewTitle.textContent = m.displayTitle;
+    if (this.sharePreviewMeta) this.sharePreviewMeta.textContent = `Trọn bộ ${m.total_episodes} tập • Full HD`;
+    if (this.shareUrlInput) this.shareUrlInput.value = window.location.href;
+    this.sharePopupBackdrop.style.display = 'flex';
   }
 
-  updateEpisodeGridsActiveState() {
-    if (!this.currentMovie) return;
-    this.renderEpisodeRangeTabs();
-    this.renderEpisodesInContainer(this.sidebarEpGrid, false);
-    if (this.epDrawer.classList.contains('active')) {
-      this.renderEpisodesInContainer(this.episodesGrid, true);
-    }
-
-    const hist = this.watchHistory[this.currentMovie.id];
-    const watchedCount = hist && Array.isArray(hist.watchedEps) ? hist.watchedEps.length : 1;
-    if (this.sidebarProgressText) {
-      this.sidebarProgressText.textContent = `Đang phát Tập ${this.currentEpIndex + 1} • Đã xem ${watchedCount}/${this.currentMovie.episodes.length} tập`;
-    }
+  closeSharePopup() {
+    if (this.sharePopupBackdrop) this.sharePopupBackdrop.style.display = 'none';
   }
 
-  renderRelatedMovies() {
-    if (!this.relatedMoviesList || !this.currentMovie) return;
-    const curCat = this.currentMovie.categories[0] || 'tong-tai';
-    const related = this.movies
-      .filter(m => m.id !== this.currentMovie.id && m.categories.includes(curCat))
-      .slice(0, 6);
-
-    this.relatedMoviesList.innerHTML = '';
-    related.forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'related-item';
-      div.innerHTML = `
-        <img src="${m.poster_url || ''}" alt="${m.displayTitle}" onerror="this.style.opacity='0.2'">
-        <div class="related-item-info">
-          <div class="related-item-title">${m.displayTitle}</div>
-          <div class="related-item-sub">Full ${m.total_episodes} Tập • ${m.primaryGenre}</div>
-        </div>
-      `;
-      div.addEventListener('click', () => {
-        const saved = this.watchHistory[m.id];
-        this.startPlayMovie(m, saved ? saved.epIndex : 0, saved ? saved.time : 0);
-      });
-      this.relatedMoviesList.appendChild(div);
+  copyShareUrl() {
+    if (!this.shareUrlInput) return;
+    this.shareUrlInput.select();
+    navigator.clipboard?.writeText(this.shareUrlInput.value).catch(() => {
+      document.execCommand('copy');
     });
+    this.showToast('✅ Đã sao chép đường dẫn chia sẻ!');
+    this.closeSharePopup();
   }
-
-  openEpisodesDrawer() {
-    if (!this.currentMovie) return;
-    if (this.drawerMovieTitle) this.drawerMovieTitle.textContent = this.currentMovie.displayTitle;
-    if (this.drawerSubtitle) {
-      this.drawerSubtitle.textContent = `Đang phát ${this.formatEpisodeShort(this.currentEpIndex)} / ${this.currentMovie.episodes.length} Tập`;
-    }
-    this.currentEpRangeIndex = Math.floor(this.currentEpIndex / this.epPageSize);
-    this.renderEpisodeRangeTabs();
-    this.renderEpisodesInContainer(this.episodesGrid, true);
-    if (this.drawerBackdrop) this.drawerBackdrop.classList.add('active');
-    this.epDrawer.classList.add('active');
-  }
-
-  closeEpisodesDrawer() {
-    if (this.drawerBackdrop) this.drawerBackdrop.classList.remove('active');
-    this.epDrawer.classList.remove('active');
-  }
-
-  closePlayer(fromPopState = false) {
-    this.cancelAutoNext();
-    if (this.controlsTimeout) clearTimeout(this.controlsTimeout);
-    this.hideLoader();
-    this.isDriveMode = false;
-    this.playerModal.classList.remove('drive-mode');
-    this.videoEl.pause();
-    this.videoEl.removeAttribute('src');
-    this.driveEmbed.src = '';
-    this.playerModal.classList.remove('active');
-    this.playerModal.classList.remove('controls-hidden');
-    this.closeEpisodesDrawer();
-    document.body.style.overflow = '';
-    this.releaseWakeLock();
-
-    if (!fromPopState && location.hash.startsWith('#watch')) {
-      try {
-        history.pushState(null, '', '#home');
-      } catch (e) {}
-    }
-
-    this.renderContinueWatching();
-    this.renderHeroSlide();
-    this.applyFilters();
-  }
-
-  /* ==================== PROGRESS TRACKING ==================== */
 
   recordEpisodeWatched(epIdx, timeSec = 0) {
     if (!this.currentMovie) return;
@@ -1744,7 +2233,6 @@ class DramaPlayApp {
       duration: 120,
       watchedEps: []
     };
-
     const watchedSet = new Set(existing.watchedEps || []);
     watchedSet.add(epIdx);
 
@@ -1757,14 +2245,13 @@ class DramaPlayApp {
       watchedEps: Array.from(watchedSet),
       updatedAt: Date.now()
     };
-
     this.saveWatchHistoryMap();
   }
 
   saveCurrentProgress() {
     if (!this.currentMovie || this.isDriveMode || !this.videoEl || !this.videoEl.currentTime) return;
     const cur = Math.floor(this.videoEl.currentTime);
-    if (cur % 3 !== 0) return; // Throttle localStorage writes to every 3 seconds
+    if (cur % 3 !== 0) return;
 
     const mid = this.currentMovie.id;
     const existing = this.watchHistory[mid] || { watchedEps: [this.currentEpIndex] };
@@ -1775,7 +2262,7 @@ class DramaPlayApp {
       movieId: mid,
       movieTitle: this.currentMovie.title,
       epIndex: this.currentEpIndex,
-      epName: this.formatEpisodeShort(this.currentEpIndex),
+      epName: `Tập ${this.currentEpIndex + 1}`,
       time: cur,
       duration: Math.floor(this.videoEl.duration || 120),
       watchedEps: Array.from(watchedSet),
@@ -1787,14 +2274,30 @@ class DramaPlayApp {
     this.saveWatchHistoryMap();
   }
 
-  /* ==================== SETTINGS & WAKE LOCK ==================== */
+  /* ==================== SETTINGS & TOAST & WAKE LOCK ==================== */
 
   openSettings() {
-    this.settingsModal.classList.add('active');
+    if (this.settingsModalBackdrop) this.settingsModalBackdrop.style.display = 'flex';
   }
 
   closeSettings() {
-    this.settingsModal.classList.remove('active');
+    if (this.settingsModalBackdrop) this.settingsModalBackdrop.style.display = 'none';
+  }
+
+  showToast(msg, duration = 1600) {
+    if (!this.globalToast) return;
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.globalToast.textContent = msg;
+    this.globalToast.classList.add('active');
+    this.toastTimeout = setTimeout(() => {
+      this.globalToast.classList.remove('active');
+    }, duration);
+  }
+
+  hideToast() {
+    if (!this.globalToast) return;
+    if (this.toastTimeout) clearTimeout(this.toastTimeout);
+    this.globalToast.classList.remove('active');
   }
 
   async requestWakeLock() {
@@ -1802,7 +2305,7 @@ class DramaPlayApp {
       if ('wakeLock' in navigator) {
         this.wakeLock = await navigator.wakeLock.request('screen');
       }
-    } catch (err) {}
+    } catch (e) {}
   }
 
   releaseWakeLock() {
@@ -1813,12 +2316,11 @@ class DramaPlayApp {
   }
 }
 
-// Global App Instance
 let appInstance = null;
 window.addEventListener('DOMContentLoaded', () => {
-  appInstance = new DramaPlayApp();
+  appInstance = new TrumDramaApp();
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=20261020_pro').catch(e => console.log('SW Error:', e));
+    navigator.serviceWorker.register('./sw.js?v=20261022_td').catch(() => {});
   }
 });
